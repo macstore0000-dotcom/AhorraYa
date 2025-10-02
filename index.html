@@ -158,14 +158,12 @@
                     <label for="month-selector" class="font-semibold">Seleccionar Mes:</label>
                     <input type="month" id="month-selector" class="border border-gray-300 rounded-md p-2">
                 </div>
-                <!-- KPIs Mensuales -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     <div class="dashboard-card"><h3 class="text-text-secondary">Ingresos Totales</h3><p id="monthly-income" class="text-3xl font-bold text-secondary"></p></div>
                     <div class="dashboard-card"><h3 class="text-text-secondary">Gastos Totales</h3><p id="monthly-expense" class="text-3xl font-bold text-accent"></p></div>
                     <div class="dashboard-card"><h3 class="text-text-secondary">Ahorro del Mes</h3><p id="monthly-savings" class="text-3xl font-bold text-primary"></p></div>
                     <div class="dashboard-card"><h3 class="text-text-secondary">Tasa de Ahorro</h3><p id="monthly-savings-rate" class="text-3xl font-bold text-primary"></p></div>
                 </div>
-                 <!-- Gráficos Mensuales -->
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div class="dashboard-card"><h3 class="text-lg font-semibold mb-4">Gastos por Subcategoría</h3><canvas id="monthly-expenses-chart"></canvas></div>
                     <div class="dashboard-card"><h3 class="text-lg font-semibold mb-4">Fuentes de Ingreso</h3><canvas id="monthly-income-chart"></canvas></div>
@@ -179,14 +177,12 @@
                     <label for="year-selector" class="font-semibold">Seleccionar Año:</label>
                     <select id="year-selector" class="border border-gray-300 rounded-md p-2"></select>
                 </div>
-                <!-- KPIs Anuales -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     <div class="dashboard-card"><h3 class="text-text-secondary">Ingresos Totales</h3><p id="annual-income" class="text-3xl font-bold text-secondary"></p></div>
                     <div class="dashboard-card"><h3 class="text-text-secondary">Gastos Totales</h3><p id="annual-expense" class="text-3xl font-bold text-accent"></p></div>
                     <div class="dashboard-card"><h3 class="text-text-secondary">Ahorro Total</h3><p id="annual-savings" class="text-3xl font-bold text-primary"></p></div>
                     <div class="dashboard-card"><h3 class="text-text-secondary">Tasa de Ahorro</h3><p id="annual-savings-rate" class="text-3xl font-bold text-primary"></p></div>
                 </div>
-                <!-- Gráficos Anuales -->
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div class="dashboard-card"><h3 class="text-lg font-semibold mb-4">Ingresos vs Gastos por Mes</h3><canvas id="annual-flow-chart"></canvas></div>
                     <div class="dashboard-card"><h3 class="text-lg font-semibold mb-4">Composición Anual de Gastos</h3><canvas id="annual-composition-chart"></canvas></div>
@@ -198,21 +194,15 @@
                     <div class="dashboard-card">
                         <h2 class="text-2xl font-bold mb-4">Gestionar Categorías Maestras</h2>
                         <p class="text-text-secondary mb-6">Los cambios realizados aquí afectarán a todos los usuarios. Agrega o elimina subcategorías y luego haz clic en "Guardar Cambios".</p>
-                        <div id="master-categories-container" class="space-y-6">
-                            <!-- Las categorías se cargarán aquí dinámicamente -->
-                        </div>
+                        <div id="master-categories-container" class="space-y-6"></div>
                         <div class="mt-8 flex justify-end">
-                            <button id="save-master-categories-btn" class="px-6 py-2 text-white bg-primary rounded-md hover:bg-primary/90 transition-colors">
-                                Guardar Cambios
-                            </button>
+                            <button id="save-master-categories-btn" class="px-6 py-2 text-white bg-primary rounded-md hover:bg-primary/90 transition-colors">Guardar Cambios</button>
                         </div>
                     </div>
                      <div class="dashboard-card">
                         <h2 class="text-2xl font-bold mb-4">Gestionar Usuarios y Roles</h2>
                         <p class="text-text-secondary mb-6">Asigna roles a los usuarios registrados en el sistema.</p>
-                        <div id="user-roles-container" class="space-y-4">
-                             <!-- La lista de usuarios se cargará aquí -->
-                        </div>
+                        <div id="user-roles-container" class="space-y-4"></div>
                     </div>
                 </div>
             </div>
@@ -314,21 +304,14 @@
 
     <!-- Firebase SDKs -->
     <script type="module">
-        // Import the functions you need from the SDKs you need
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, updatePassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, where, onSnapshot, deleteDoc, doc, serverTimestamp, orderBy, getDoc, setDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, onSnapshot, deleteDoc, doc, serverTimestamp, orderBy, getDoc, setDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
         
-        // Cargar los íconos al cargar la página
-        window.addEventListener('load', () => {
-            if (typeof lucide !== 'undefined') {
-                lucide.createIcons();
-            }
-        });
+        window.addEventListener('load', () => { if (typeof lucide !== 'undefined') lucide.createIcons() });
         
         window.addEventListener('DOMContentLoaded', () => {
             
-            // --- CONFIGURACIÓN DE FIREBASE ---
             const firebaseConfig = {
                 apiKey: "AIzaSyCLEcYRMdwf5GhLxr49ljaPlaRJyOsCK3c",
                 authDomain: "mi-presupuesto-web.firebaseapp.com",
@@ -338,89 +321,85 @@
                 appId: "1:362593144629:web:eb7dd42366e3ab28b7467c"
             };
             
-            // --- INICIALIZACIÓN DE FIREBASE ---
             const app = initializeApp(firebaseConfig);
             const auth = getAuth(app);
             const db = getFirestore(app);
             
-            // --- ESTADO GLOBAL DE LA APP ---
             let currentUser = null;
-            let currentUserRole = 'user'; // Rol por defecto
+            let currentUserRole = 'user';
             let transactionsUnsubscribe = null;
             let allTransactions = [];
             let chartInstances = {};
             let inactivityTimer;
             let datetimeInterval = null;
-            let masterCategories = {}; // Se cargará desde Firestore
+            let masterCategories = {};
             const paymentMethods = ["Tarjeta de Crédito", "Tarjeta de Débito", "Billetera Digital", "Efectivo", "Transferencia"];
 
-            
-            // --- ELEMENTOS DEL DOM ---
             const loginView = document.getElementById('login-view');
             const appView = document.getElementById('app-view');
             const loginForm = document.getElementById('login-form');
             const logoutButton = document.getElementById('logout-button');
             const userEmailSpan = document.getElementById('user-email');
             const transactionsTableBody = document.getElementById('transactions-table-body');
-            const modal = document.getElementById('transaction-modal');
-            const addTransactionBtn = document.getElementById('add-transaction-btn');
-            const closeModalBtn = document.getElementById('close-modal-btn');
-            const transactionForm = document.getElementById('transaction-form');
             const monthSelector = document.getElementById('month-selector');
             const yearSelector = document.getElementById('year-selector');
+            const adminTab = document.getElementById('admin-tab-btn');
 
-            // --- LÓGICA DE AUTENTICACIÓN Y SESIÓN ---
+            // --- LÓGICA DE MANEJO DE ESTADO DE AUTENTICACIÓN ---
+            
+            const handleLogin = async (user) => {
+                currentUser = user;
+                await getUserRole(user.uid);
+                const categoriesLoaded = await loadMasterCategories();
+                if (!categoriesLoaded) { await signOut(auth); return; }
 
-            onAuthStateChanged(auth, async (user) => {
-                const adminTab = document.getElementById('admin-tab-btn');
+                appView.style.display = 'block';
+                loginView.style.display = 'none';
+                userEmailSpan.textContent = user.email;
+                if (currentUserRole === 'admin') adminTab.style.display = 'flex'; else adminTab.style.display = 'none';
                 
-                if (user) {
-                    currentUser = user;
-                    
-                    await getUserRole(user.uid); // Obtener el rol del usuario
+                loadTransactions();
+                resetInactivityTimer();
+                document.addEventListener('mousemove', resetInactivityTimer);
+                document.addEventListener('keydown', resetInactivityTimer);
+                
+                updateClock();
+                if(datetimeInterval) clearInterval(datetimeInterval);
+                datetimeInterval = setInterval(updateClock, 1000);
+                
+                const today = new Date();
+                const year = today.getFullYear();
+                const month = (today.getMonth() + 1).toString().padStart(2, '0');
+                monthSelector.value = `${year}-${month}`;
+                populateYearSelector();
+                yearSelector.value = year;
+                updateDashboards();
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            };
 
-                    const categoriesLoaded = await loadMasterCategories();
-                    if (!categoriesLoaded) {
-                        await signOut(auth); 
-                        return;
-                    }
-                    
-                    appView.style.display = 'block';
-                    loginView.style.display = 'none';
-                    userEmailSpan.textContent = user.email;
+            const handleLogout = () => {
+                if (transactionsUnsubscribe) transactionsUnsubscribe();
+                if (datetimeInterval) clearInterval(datetimeInterval);
+                clearTimeout(inactivityTimer);
+                document.removeEventListener('mousemove', resetInactivityTimer);
+                document.removeEventListener('keydown', resetInactivityTimer);
 
-                    if (typeof lucide !== 'undefined') lucide.createIcons();
-                    
-                    resetInactivityTimer();
-                    initApp();
+                currentUser = null;
+                currentUserRole = 'user';
+                allTransactions = [];
+                
+                appView.style.display = 'none';
+                loginView.style.display = 'flex';
+                adminTab.style.display = 'none';
+                userEmailSpan.textContent = '';
+                document.getElementById('current-datetime').textContent = '';
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            };
 
-                    // Lógica de visibilidad definitiva
-                    if (currentUserRole === 'admin') {
-                        adminTab.style.display = 'flex'; // Usar 'flex' para que el ícono y texto se vean bien
-                    } else {
-                        adminTab.style.display = 'none';
-                    }
-
-                } else {
-                    currentUser = null;
-                    currentUserRole = 'user';
-                    appView.style.display = 'none';
-                    loginView.style.display = 'flex';
-                    userEmailSpan.textContent = '';
-
-                    // Ocultar la pestaña de admin de forma definitiva al cerrar sesión.
-                    adminTab.style.display = 'none';
-
-                    if (transactionsUnsubscribe) transactionsUnsubscribe();
-                    if (datetimeInterval) clearInterval(datetimeInterval);
-                    document.getElementById('current-datetime').textContent = '';
-                    clearTimeout(inactivityTimer);
-                    document.removeEventListener('mousemove', resetInactivityTimer);
-                    document.removeEventListener('keydown', resetInactivityTimer);
-                    if (typeof lucide !== 'undefined') lucide.createIcons();
-                }
-            });
-
+            onAuthStateChanged(auth, (user) => user ? handleLogin(user) : handleLogout());
+            
+            // --- EVENT LISTENERS (SE CONFIGURAN UNA SOLA VEZ) ---
+            
             loginForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const email = loginForm.email.value;
@@ -430,37 +409,22 @@
                     await signInWithEmailAndPassword(auth, email, password);
                     loginError.classList.add('hidden');
                 } catch (error) {
-                    console.error("Error de inicio de sesión:", error.message);
                     loginError.textContent = "Correo o contraseña incorrectos.";
                     loginError.classList.remove('hidden');
                 }
             });
 
-            logoutButton.addEventListener('click', async () => {
-                await signOut(auth);
-            });
+            logoutButton.addEventListener('click', () => signOut(auth));
+            monthSelector.addEventListener('change', () => updateDashboards());
+            yearSelector.addEventListener('change', () => updateDashboards());
+            
+            setupTabs();
+            setupTransactionModal();
+            setupPasswordModal();
+            setupAdminListeners();
 
-            function logoutDueToInactivity() {
-                showAlert("Se ha cerrado la sesión por inactividad.", () => {
-                    signOut(auth);
-                });
-            }
+            // --- LÓGICA DE DATOS Y ROLES ---
 
-            function resetInactivityTimer() {
-                clearTimeout(inactivityTimer);
-                inactivityTimer = setTimeout(logoutDueToInactivity, 10 * 60 * 1000); 
-            }
-
-            function updateClock() {
-                const now = new Date();
-                const options = { timeZone: 'America/Lima', weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric' };
-                const formatter = new Intl.DateTimeFormat('es-PE', options);
-                const formattedDate = formatter.format(now);
-                const capitalizedDate = formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
-                document.getElementById('current-datetime').textContent = capitalizedDate;
-            }
-
-            // --- LÓGICA DE DATOS MAESTROS Y ROLES ---
             async function getUserRole(uid) {
                 const userDocRef = doc(db, 'users', uid);
                 const userDocSnap = await getDoc(userDocRef);
@@ -468,7 +432,6 @@
 
                 if (userDocSnap.exists()) {
                     const currentRoleInDB = userDocSnap.data().role;
-                    // Lógica de auto-reparación: si el correo es de admin pero el rol en la BD no lo es, se corrige.
                     if (isAdminByEmail && currentRoleInDB !== 'admin') {
                         await setDoc(userDocRef, { role: 'admin' }, { merge: true });
                         currentUserRole = 'admin';
@@ -476,7 +439,6 @@
                         currentUserRole = currentRoleInDB || 'user';
                     }
                 } else {
-                    // Primer inicio de sesión: crear documento con el rol correcto desde el principio.
                     const initialRole = isAdminByEmail ? 'admin' : 'user';
                     await setDoc(userDocRef, { email: currentUser.email, role: initialRole });
                     currentUserRole = initialRole;
@@ -487,63 +449,22 @@
                 try {
                     const docRef = doc(db, "config", "master_categories");
                     const docSnap = await getDoc(docRef);
-
                     if (docSnap.exists()) {
                         masterCategories = docSnap.data().data;
                         return true;
+                    } else if (currentUserRole === 'admin') {
+                        const defaultCategories = { "Ingreso": { "Ingreso Fijo": ["Sueldo Fijo"], "Ingreso Variable": ["Emprendimiento", "Cachuelos", "Préstamos"] }, "Gasto": { "Gasto Necesario": ["Mercado", "Internet", "Celular", "Transporte", "Seguro", "Cuidado personal", "Renta", "Mascota", "Salud", "Electricidad", "Comida del día", "Pensión Alimentos", "Extras - Hijos/as", "Emergencias"], "Gastos Deseos": ["Desarrollo personal", "Compras", "Ropa", "Regalos", "Suscripciones", "Viajes", "Salidas"] }, "Deuda": { "Deudas": ["Hipoteca", "Préstamo Carro", "Pago Tarjeta", "Préstamo Personal"] } };
+                        await setDoc(docRef, { data: defaultCategories });
+                        masterCategories = defaultCategories;
+                        return true;
                     } else {
-                        const defaultCategories = {
-                            "Ingreso": { "Ingreso Fijo": ["Sueldo Fijo"], "Ingreso Variable": ["Emprendimiento", "Cachuelos", "Préstamos"] },
-                            "Gasto": { "Gasto Necesario": ["Mercado", "Internet", "Celular", "Transporte", "Seguro", "Cuidado personal", "Renta", "Mascota", "Salud", "Electricidad", "Comida del día", "Pensión Alimentos", "Extras - Hijos/as", "Emergencias"], "Gastos Deseos": ["Desarrollo personal", "Compras", "Ropa", "Regalos", "Suscripciones", "Viajes", "Salidas"] },
-                            "Deuda": { "Deudas": ["Hipoteca", "Préstamo Carro", "Pago Tarjeta", "Préstamo Personal"] }
-                        };
-                        
-                        if (currentUserRole === 'admin') {
-                            await setDoc(doc(db, "config", "master_categories"), { data: defaultCategories });
-                            masterCategories = defaultCategories;
-                            return true;
-                        } else {
-                            showAlert("Error de configuración: No se encontraron las categorías maestras. El administrador debe iniciar sesión primero para crearlas.");
-                            return false;
-                        }
+                        showAlert("Error de configuración: Las categorías maestras no existen. El administrador debe iniciar sesión primero para crearlas.");
+                        return false;
                     }
                 } catch (error) {
-                    console.error("Error loading master categories:", error);
-                    if (error.code === 'permission-denied') {
-                        showAlert("Error de Permisos: No se pueden leer las categorías. Asegúrate de haber aplicado las reglas de seguridad correctas en tu base de datos de Firebase. Revisa el archivo README.");
-                    } else {
-                        showAlert("Ocurrió un error inesperado al cargar la configuración. Contacte al administrador.");
-                    }
+                    if (error.code === 'permission-denied') showAlert("Error de Permisos: No se pueden leer las categorías. Asegúrate de haber aplicado las reglas de seguridad correctas en tu base de datos de Firebase.");
+                    else showAlert("Ocurrió un error inesperado al cargar la configuración.");
                     return false;
-                }
-            }
-
-
-            // --- LÓGICA PRINCIPAL DE LA APLICACIÓN ---
-            function initApp() {
-                document.addEventListener('mousemove', resetInactivityTimer);
-                document.addEventListener('keydown', resetInactivityTimer);
-                
-                loadTransactions();
-
-                const today = new Date();
-                const year = today.getFullYear();
-                const month = (today.getMonth() + 1).toString().padStart(2, '0');
-                monthSelector.value = `${year}-${month}`;
-                populateYearSelector();
-                yearSelector.value = year;
-
-                monthSelector.addEventListener('change', updateDashboards);
-                yearSelector.addEventListener('change', updateDashboards);
-
-                updateClock();
-                datetimeInterval = setInterval(updateClock, 1000);
-
-                setupTabs();
-                setupTransactionModal();
-                setupPasswordModal();
-                if (currentUserRole === 'admin') {
-                    setupAdminPanel();
                 }
             }
 
@@ -558,8 +479,10 @@
                 });
             }
 
+            // --- LÓGICA DE RENDERIZADO Y UI ---
+            
             function renderTransactionsTable() {
-                if (allTransactions.length === 0) {
+                 if (allTransactions.length === 0) {
                     transactionsTableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4">No hay transacciones registradas.</td></tr>`;
                     return;
                 }
@@ -593,9 +516,12 @@
                     });
                 });
             }
-            
-            // --- LÓGICA DE DASHBOARDS (sin cambios) ---
-            function updateDashboards() { updateMonthlyDashboard(); updateAnnualDashboard(); }
+
+            function updateDashboards() {
+                updateMonthlyDashboard();
+                updateAnnualDashboard();
+            }
+
             function updateMonthlyDashboard() {
                 const selectedMonth = monthSelector.value;
                 const monthlyTransactions = allTransactions.filter(t => t.date.startsWith(selectedMonth));
@@ -636,6 +562,7 @@
                     yearSelector.appendChild(option);
                 }
             }
+
             function renderChart(canvasId, type, data, options) {
                 if (chartInstances[canvasId]) chartInstances[canvasId].destroy();
                 const ctx = document.getElementById(canvasId).getContext('2d');
@@ -670,44 +597,53 @@
                 renderChart('annual-composition-chart', 'doughnut', { labels: Object.keys(grouped), datasets: [{ data: Object.values(grouped), backgroundColor: ['#f87171', '#fbbf24', '#a78bfa'] }] }, { responsive: true });
             }
 
-            // --- LÓGICA DE MODALES Y PESTAÑAS ---
-            function showAlert(message, onOk) {
-                const alertModal = document.getElementById('alert-modal'), msg = document.getElementById('alert-message'), okBtn = document.getElementById('alert-ok-btn');
-                msg.textContent = message; alertModal.style.display = 'flex';
-                okBtn.onclick = () => { alertModal.style.display = 'none'; if (onOk) onOk(); };
-            }
-            function showConfirmation(message, onConfirm) {
-                const confirmModal = document.getElementById('confirm-modal'), msg = document.getElementById('confirm-message'), okBtn = document.getElementById('confirm-ok-btn'), cancelBtn = document.getElementById('confirm-cancel-btn');
-                msg.textContent = message; confirmModal.style.display = 'flex';
-                const onOkClick = () => { onConfirm(); cleanup(); }, onCancelClick = () => cleanup();
-                const cleanup = () => { confirmModal.style.display = 'none'; okBtn.removeEventListener('click', onOkClick); cancelBtn.removeEventListener('click', onCancelClick); };
-                okBtn.addEventListener('click', onOkClick, { once: true }); cancelBtn.addEventListener('click', onCancelClick, { once: true });
-            }
             function setupTabs() {
-                const tabButtons = document.querySelectorAll('.tab-button'), tabContents = document.querySelectorAll('.tab-content');
-                const updateButtonStyle = (activeButton) => {
+                const tabButtons = document.querySelectorAll('.tab-button');
+                const tabContents = document.querySelectorAll('.tab-content');
+                 const updateButtonStyle = (activeButton) => {
                     tabButtons.forEach(btn => btn.className = 'tab-button px-3 py-2 font-medium text-sm rounded-t-lg border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 transition-colors flex items-center gap-2');
                     activeButton.className = 'tab-button active px-3 py-2 font-medium text-sm rounded-t-lg border-b-2 transition-colors flex items-center gap-2 border-primary text-primary bg-indigo-50';
                 };
-                tabButtons.forEach(button => button.addEventListener('click', () => {
-                    updateButtonStyle(button);
-                    const tabName = button.dataset.tab;
-                    tabContents.forEach(content => content.classList.toggle('hidden', content.id !== `${tabName}-content`));
-                    if (['monthly', 'annual'].includes(tabName)) updateDashboards();
-                    if(tabName === 'admin' && currentUserRole === 'admin') setupAdminPanel();
-                }));
+                tabButtons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        updateButtonStyle(button);
+                        const tabName = button.dataset.tab;
+                        tabContents.forEach(content => content.classList.toggle('hidden', content.id !== `${tabName}-content`));
+                        if (['monthly', 'annual'].includes(tabName)) updateDashboards();
+                        if (button.dataset.tab === 'admin' && currentUserRole === 'admin') {
+                            renderAdminPanel();
+                        }
+                    });
+                });
                 updateButtonStyle(document.querySelector('.tab-button.active'));
             }
+
             function setupTransactionModal() {
-                const typeSelect = document.getElementById('trans-type'), categorySelect = document.getElementById('trans-category'), subcategorySelect = document.getElementById('trans-subcategory'), paymentSelect = document.getElementById('trans-payment');
+                const modal = document.getElementById('transaction-modal');
+                const form = document.getElementById('transaction-form');
                 const saveBtn = document.getElementById('save-transaction-btn');
-                
-                function populateSelectors() {
+                const typeSelect = document.getElementById('trans-type');
+                const categorySelect = document.getElementById('trans-category');
+                const subcategorySelect = document.getElementById('trans-subcategory');
+                const paymentSelect = document.getElementById('trans-payment');
+
+                document.getElementById('add-transaction-btn').addEventListener('click', () => {
+                    form.reset();
+                    saveBtn.disabled = false;
+                    saveBtn.textContent = 'Guardar Transacción';
+                    
+                    const formatter = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Lima', year: 'numeric', month: '2-digit', day: '2-digit' });
+                    document.getElementById('trans-date').value = formatter.format(new Date());
+                    
                     typeSelect.innerHTML = '<option value="">Seleccione...</option>';
                     Object.keys(masterCategories).forEach(type => typeSelect.innerHTML += `<option value="${type}">${type}</option>`);
                     paymentSelect.innerHTML = '<option value="">Seleccione...</option>';
                     paymentMethods.forEach(p => paymentSelect.innerHTML += `<option value="${p}">${p}</option>`);
-                }
+                    
+                    modal.style.display = "flex";
+                });
+                document.getElementById('close-modal-btn').addEventListener('click', () => modal.style.display = "none");
+                
                 typeSelect.addEventListener('change', () => {
                     categorySelect.innerHTML = '<option value="">Seleccione...</option>';
                     const selectedType = typeSelect.value;
@@ -721,40 +657,44 @@
                         masterCategories[selectedType][selectedCat].forEach(sub => subcategorySelect.innerHTML += `<option value="${sub}">${sub}</option>`);
                     }
                 });
-                addTransactionBtn.onclick = () => {
-                    transactionForm.reset();
-                    saveBtn.disabled = false;
-                    saveBtn.textContent = 'Guardar Transacción';
-                    const formatter = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Lima', year: 'numeric', month: '2-digit', day: '2-digit' });
-                    document.getElementById('trans-date').value = formatter.format(new Date());
-                    populateSelectors();
-                    modal.style.display = "flex";
-                }
-                closeModalBtn.onclick = () => modal.style.display = "none";
-                window.onclick = (event) => { if (event.target == modal) modal.style.display = "none"; }
-                
-                transactionForm.addEventListener('submit', async (e) => {
+
+                form.addEventListener('submit', async (e) => {
                     e.preventDefault();
+                    if (saveBtn.disabled) return;
                     saveBtn.disabled = true;
                     saveBtn.textContent = 'Guardando...';
 
-                    const newTransaction = { type: typeSelect.value, category: categorySelect.value, subcategory: subcategorySelect.value, amount: document.getElementById('trans-amount').value, date: document.getElementById('trans-date').value, paymentMethod: paymentSelect.value, detail: document.getElementById('trans-detail').value.trim(), createdAt: serverTimestamp() };
+                    const newTransaction = { 
+                        type: typeSelect.value, 
+                        category: categorySelect.value, 
+                        subcategory: subcategorySelect.value, 
+                        amount: document.getElementById('trans-amount').value, 
+                        date: document.getElementById('trans-date').value, 
+                        paymentMethod: paymentSelect.value, 
+                        detail: document.getElementById('trans-detail').value.trim(), 
+                        createdAt: serverTimestamp() 
+                    };
+
                     try {
                         const transactionsRef = collection(db, "users", currentUser.uid, "transactions");
                         await addDoc(transactionsRef, newTransaction);
                         modal.style.display = "none";
                     } catch (error) { 
-                        console.error("Error al agregar la transacción:", error); 
                         showAlert("No se pudo guardar la transacción.");
                         saveBtn.disabled = false;
                         saveBtn.textContent = 'Guardar Transacción';
                     }
                 });
             }
+            
             function setupPasswordModal() {
                 const passwordModal = document.getElementById('password-modal'), openBtn = document.getElementById('change-password-btn'), closeBtn = document.getElementById('close-password-modal-btn'), passwordForm = document.getElementById('password-form'), passwordError = document.getElementById('password-error');
-                openBtn.onclick = () => { passwordForm.reset(); passwordError.classList.add('hidden'); passwordModal.style.display = 'flex'; };
-                closeBtn.onclick = () => passwordModal.style.display = 'none';
+                openBtn.addEventListener('click', () => { 
+                    passwordForm.reset(); 
+                    passwordError.classList.add('hidden'); 
+                    passwordModal.style.display = 'flex'; 
+                });
+                closeBtn.addEventListener('click', () => passwordModal.style.display = 'none');
                 passwordForm.addEventListener('submit', async (e) => {
                     e.preventDefault();
                     const newPassword = document.getElementById('new-password').value, confirmPassword = document.getElementById('confirm-password').value;
@@ -768,131 +708,109 @@
                     } catch (error) { console.error("Error al cambiar contraseña:", error); passwordError.textContent = "Ocurrió un error. Es posible que necesites volver a iniciar sesión para realizar esta acción."; passwordError.classList.remove('hidden'); }
                 });
             }
+            
+            function setupAdminListeners() {
+                document.getElementById('save-master-categories-btn').addEventListener('click', async () => {
+                    if (currentUserRole !== 'admin') return;
+                    try {
+                        await setDoc(doc(db, "config", "master_categories"), { data: masterCategories });
+                        showAlert("Categorías maestras actualizadas con éxito.");
+                    } catch (error) {
+                        showAlert("No se pudieron guardar los cambios.");
+                    }
+                });
+            }
 
-            // --- LÓGICA DEL PANEL DE ADMINISTRACIÓN ---
-            async function setupAdminPanel() {
-                await renderMasterCategoriesPanel();
-                await renderUserRolesPanel();
+            function renderAdminPanel() {
+                renderMasterCategoriesPanel();
+                renderUserRolesPanel();
             }
 
             async function renderMasterCategoriesPanel() {
-                 const container = document.getElementById('master-categories-container');
+                const container = document.getElementById('master-categories-container');
                 container.innerHTML = ''; 
-
                 Object.keys(masterCategories).forEach(type => {
                     const typeDiv = document.createElement('div');
                     typeDiv.className = 'p-4 border rounded-lg bg-slate-50';
                     let typeHtml = `<h3 class="text-xl font-bold text-primary mb-3">${type}</h3>`;
                     Object.keys(masterCategories[type]).forEach(category => {
-                        typeHtml += `<div class="ml-4 mb-4">
-                            <h4 class="font-semibold text-text-primary">${category}</h4>
-                            <ul class="list-disc ml-5 mt-2 text-sm text-text-secondary space-y-1">
-                                ${masterCategories[type][category].map(sub => `
-                                    <li class="flex items-center justify-between">
-                                        <span>${sub}</span>
-                                        <button data-type="${type}" data-category="${category}" data-sub="${sub}" class="admin-delete-subcategory-btn text-red-500 hover:text-red-700 font-bold text-lg leading-none">&times;</button>
-                                    </li>`).join('')}
-                            </ul>
-                         </div>`;
+                        typeHtml += `<div class="ml-4 mb-4"><h4 class="font-semibold text-text-primary">${category}</h4><ul class="list-disc ml-5 mt-2 text-sm text-text-secondary space-y-1">
+                            ${masterCategories[type][category].map(sub => `<li class="flex items-center justify-between"><span>${sub}</span><button data-type="${type}" data-category="${category}" data-sub="${sub}" class="admin-delete-subcategory-btn text-red-500 hover:text-red-700 font-bold text-lg leading-none">&times;</button></li>`).join('')}
+                        </ul></div>`;
                     });
-                    typeHtml += `<div class="mt-4 ml-4 p-2 border-t">
-                        <p class="text-sm font-medium mb-2">Añadir Nueva Subcategoría</p>
-                        <div class="flex gap-2 items-center">
-                            <select class="admin-category-select border rounded-md p-2 text-sm w-1/3">
-                                ${Object.keys(masterCategories[type]).map(cat => `<option value="${cat}">${cat}</option>`).join('')}
-                            </select>
-                            <input type="text" placeholder="Nombre de subcategoría" class="admin-subcategory-input border rounded-md p-2 text-sm flex-grow">
-                            <button class="admin-add-subcategory-btn bg-secondary text-white text-sm px-3 py-2 rounded-md hover:bg-secondary/90" data-type="${type}">Añadir</button>
-                        </div>
-                     </div>`;
+                    typeHtml += `<div class="mt-4 ml-4 p-2 border-t"><p class="text-sm font-medium mb-2">Añadir Nueva Subcategoría</p><div class="flex gap-2 items-center">
+                        <select class="admin-category-select border rounded-md p-2 text-sm w-1/3">${Object.keys(masterCategories[type]).map(cat => `<option value="${cat}">${cat}</option>`).join('')}</select>
+                        <input type="text" placeholder="Nombre de subcategoría" class="admin-subcategory-input border rounded-md p-2 text-sm flex-grow">
+                        <button class="admin-add-subcategory-btn bg-secondary text-white text-sm px-3 py-2 rounded-md hover:bg-secondary/90" data-type="${type}">Añadir</button>
+                    </div></div>`;
                     typeDiv.innerHTML = typeHtml;
                     container.appendChild(typeDiv);
                 });
-
-                document.querySelectorAll('.admin-add-subcategory-btn').forEach(btn => btn.addEventListener('click', (e) => {
-                    const type = e.target.dataset.type;
-                    const parentDiv = e.target.closest('.flex');
-                    const category = parentDiv.querySelector('.admin-category-select').value;
-                    const input = parentDiv.querySelector('.admin-subcategory-input');
-                    const newSubcategory = input.value.trim();
-                    if (newSubcategory && category && !masterCategories[type][category].includes(newSubcategory)) {
-                        masterCategories[type][category].push(newSubcategory);
-                        renderMasterCategoriesPanel();
-                    }
+                container.querySelectorAll('.admin-add-subcategory-btn').forEach(btn => btn.addEventListener('click', (e) => {
+                    const type = e.target.dataset.type, parentDiv = e.target.closest('.flex'), category = parentDiv.querySelector('.admin-category-select').value, input = parentDiv.querySelector('.admin-subcategory-input'), newSubcategory = input.value.trim();
+                    if (newSubcategory && category && !masterCategories[type][category].includes(newSubcategory)) { masterCategories[type][category].push(newSubcategory); renderMasterCategoriesPanel(); }
                     input.value = '';
                 }));
-                document.querySelectorAll('.admin-delete-subcategory-btn').forEach(btn => btn.addEventListener('click', (e) => {
-                    const { type, category, sub } = e.target.dataset;
-                    const index = masterCategories[type][category].indexOf(sub);
-                    if (index > -1) {
-                        masterCategories[type][category].splice(index, 1);
-                        renderMasterCategoriesPanel();
-                    }
+                container.querySelectorAll('.admin-delete-subcategory-btn').forEach(btn => btn.addEventListener('click', (e) => {
+                    const { type, category, sub } = e.target.dataset, index = masterCategories[type][category].indexOf(sub);
+                    if (index > -1) { masterCategories[type][category].splice(index, 1); renderMasterCategoriesPanel(); }
                 }));
             }
 
             async function renderUserRolesPanel() {
                 const container = document.getElementById('user-roles-container');
                 container.innerHTML = `<div class="text-center p-4">Cargando usuarios...</div>`;
-
                 try {
                     const usersCollection = collection(db, 'users');
                     const userSnapshot = await getDocs(usersCollection);
                     const usersList = userSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-                    let usersHtml = usersList.map(user => {
-                        const isAdmin = user.role === 'admin';
-                        // Deshabilitar el selector para el propio administrador para evitar auto-bloqueo
-                        const isDisabled = user.id === currentUser.uid ? 'disabled' : '';
-
-                        return `
-                        <div class="flex justify-between items-center p-3 bg-gray-50 rounded-md">
-                            <span class="text-sm font-medium">${user.email}</span>
+                    container.innerHTML = usersList.map(user => {
+                        const isAdmin = user.role === 'admin', isDisabled = user.id === currentUser.uid ? 'disabled' : '';
+                        return `<div class="flex justify-between items-center p-3 bg-gray-50 rounded-md"><span class="text-sm font-medium">${user.email}</span>
                             <select data-uid="${user.id}" class="role-select border rounded-md p-1 text-sm bg-white disabled:bg-gray-200" ${isDisabled}>
-                                <option value="user" ${!isAdmin ? 'selected' : ''}>Usuario</option>
-                                <option value="admin" ${isAdmin ? 'selected' : ''}>Administrador</option>
-                            </select>
-                        </div>
-                    `}).join('');
-                    container.innerHTML = usersHtml;
-                    
-                    document.querySelectorAll('.role-select').forEach(select => {
-                        select.addEventListener('change', async (e) => {
-                            const newRole = e.target.value;
-                            const uid = e.target.dataset.uid;
+                                <option value="user" ${!isAdmin ? 'selected' : ''}>Usuario</option><option value="admin" ${isAdmin ? 'selected' : ''}>Administrador</option>
+                            </select></div>`;
+                    }).join('');
+                    container.querySelectorAll('.role-select').forEach(select => {
+                        select.addEventListener('change', (e) => {
+                            const newRole = e.target.value, uid = e.target.dataset.uid;
                             showConfirmation(`¿Seguro que quieres cambiar el rol a "${newRole}"?`, async () => {
-                                 try {
-                                    await setDoc(doc(db, 'users', uid), { role: newRole }, { merge: true });
-                                    showAlert("Rol actualizado con éxito.");
-                                } catch (error) {
-                                    console.error("Error al actualizar rol:", error);
-                                    showAlert("No se pudo actualizar el rol.");
-                                    renderUserRolesPanel(); // Revertir visualmente
-                                }
+                                 try { await setDoc(doc(db, 'users', uid), { role: newRole }, { merge: true }); showAlert("Rol actualizado con éxito."); } 
+                                 catch (error) { showAlert("No se pudo actualizar el rol."); renderUserRolesPanel(); }
                             });
                         });
                     });
-
                 } catch (error) {
-                    console.error("Error fetching users:", error);
                     let errorMessage = "Error al cargar usuarios.";
-                    if (error.code === 'permission-denied') {
-                        errorMessage += " Verifique que las reglas de seguridad de Firestore estén actualizadas correctamente.";
-                    }
+                    if (error.code === 'permission-denied') errorMessage += " Verifique que las reglas de seguridad de Firestore estén actualizadas correctamente.";
                     container.innerHTML = `<div class="text-center p-4 text-red-500">${errorMessage}</div>`;
                 }
             }
 
-            document.getElementById('save-master-categories-btn').addEventListener('click', async () => {
-                try {
-                    await setDoc(doc(db, "config", "master_categories"), { data: masterCategories });
-                    showAlert("Categorías maestras actualizadas con éxito.");
-                } catch (error) {
-                    console.error("Error al guardar categorías maestras:", error);
-                    showAlert("No se pudieron guardar los cambios.");
-                }
-            });
-
+            // --- Utilidades ---
+            function resetInactivityTimer() {
+                clearTimeout(inactivityTimer);
+                inactivityTimer = setTimeout(() => showAlert("Se ha cerrado la sesión por inactividad.", () => signOut(auth)), 10 * 60 * 1000); 
+            }
+            function updateClock() {
+                const now = new Date();
+                const options = { timeZone: 'America/Lima', weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric' };
+                const formatter = new Intl.DateTimeFormat('es-PE', options);
+                const capitalizedDate = formatter.format(now).replace(/^\w/, c => c.toUpperCase());
+                document.getElementById('current-datetime').textContent = capitalizedDate;
+            }
+             function showAlert(message, onOk) {
+                const modal = document.getElementById('alert-modal'), msg = document.getElementById('alert-message'), okBtn = document.getElementById('alert-ok-btn');
+                msg.textContent = message; modal.style.display = 'flex';
+                okBtn.onclick = () => { modal.style.display = 'none'; if (onOk) onOk(); };
+            }
+            function showConfirmation(message, onConfirm) {
+                const modal = document.getElementById('confirm-modal'), msg = document.getElementById('confirm-message'), okBtn = document.getElementById('confirm-ok-btn'), cancelBtn = document.getElementById('confirm-cancel-btn');
+                msg.textContent = message; modal.style.display = 'flex';
+                const onOkClick = () => { onConfirm(); cleanup(); }, onCancelClick = () => cleanup();
+                const cleanup = () => { modal.style.display = 'none'; okBtn.removeEventListener('click', onOkClick); cancelBtn.removeEventListener('click', onCancelClick); };
+                okBtn.addEventListener('click', onOkClick, { once: true }); cancelBtn.addEventListener('click', onCancelClick, { once: true });
+            }
         });
     </script>
 </body>
