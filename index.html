@@ -256,7 +256,9 @@
                         <label for="trans-detail" class="block text-sm font-medium text-gray-700">Detalle (Opcional)</label>
                         <textarea id="trans-detail" rows="2" class="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md" placeholder="Ej: Compra de supermercado semanal"></textarea>
                     </div>
-                    <button type="submit" class="w-full py-2 px-4 text-white bg-secondary rounded-md hover:bg-secondary/90">Guardar Transacción</button>
+                    <button id="save-transaction-btn" type="submit" class="w-full py-2 px-4 text-white bg-secondary rounded-md hover:bg-secondary/90 disabled:bg-gray-400">
+                        Guardar Transacción
+                    </button>
                 </div>
             </form>
         </div>
@@ -698,6 +700,8 @@
             }
             function setupTransactionModal() {
                 const typeSelect = document.getElementById('trans-type'), categorySelect = document.getElementById('trans-category'), subcategorySelect = document.getElementById('trans-subcategory'), paymentSelect = document.getElementById('trans-payment');
+                const saveBtn = document.getElementById('save-transaction-btn');
+                
                 function populateSelectors() {
                     typeSelect.innerHTML = '<option value="">Seleccione...</option>';
                     Object.keys(masterCategories).forEach(type => typeSelect.innerHTML += `<option value="${type}">${type}</option>`);
@@ -719,6 +723,8 @@
                 });
                 addTransactionBtn.onclick = () => {
                     transactionForm.reset();
+                    saveBtn.disabled = false;
+                    saveBtn.textContent = 'Guardar Transacción';
                     const formatter = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Lima', year: 'numeric', month: '2-digit', day: '2-digit' });
                     document.getElementById('trans-date').value = formatter.format(new Date());
                     populateSelectors();
@@ -726,14 +732,23 @@
                 }
                 closeModalBtn.onclick = () => modal.style.display = "none";
                 window.onclick = (event) => { if (event.target == modal) modal.style.display = "none"; }
+                
                 transactionForm.addEventListener('submit', async (e) => {
                     e.preventDefault();
+                    saveBtn.disabled = true;
+                    saveBtn.textContent = 'Guardando...';
+
                     const newTransaction = { type: typeSelect.value, category: categorySelect.value, subcategory: subcategorySelect.value, amount: document.getElementById('trans-amount').value, date: document.getElementById('trans-date').value, paymentMethod: paymentSelect.value, detail: document.getElementById('trans-detail').value.trim(), createdAt: serverTimestamp() };
                     try {
                         const transactionsRef = collection(db, "users", currentUser.uid, "transactions");
                         await addDoc(transactionsRef, newTransaction);
                         modal.style.display = "none";
-                    } catch (error) { console.error("Error al agregar la transacción:", error); showAlert("No se pudo guardar la transacción."); }
+                    } catch (error) { 
+                        console.error("Error al agregar la transacción:", error); 
+                        showAlert("No se pudo guardar la transacción.");
+                        saveBtn.disabled = false;
+                        saveBtn.textContent = 'Guardar Transacción';
+                    }
                 });
             }
             function setupPasswordModal() {
@@ -882,10 +897,4 @@
     </script>
 </body>
 </html>
-
-
-
-
-
-
 
