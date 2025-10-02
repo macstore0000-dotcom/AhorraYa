@@ -333,6 +333,7 @@
             let inactivityTimer;
             let datetimeInterval = null;
             let masterCategories = {};
+            let isSubmitting = false;
             const paymentMethods = ["Tarjeta de Crédito", "Tarjeta de Débito", "Billetera Digital", "Efectivo", "Transferencia"];
 
             const loginView = document.getElementById('login-view');
@@ -629,6 +630,7 @@
 
                 document.getElementById('add-transaction-btn').addEventListener('click', () => {
                     form.reset();
+                    isSubmitting = false; // Reset submission flag
                     saveBtn.disabled = false;
                     saveBtn.textContent = 'Guardar Transacción';
                     
@@ -660,7 +662,9 @@
 
                 form.addEventListener('submit', async (e) => {
                     e.preventDefault();
-                    if (saveBtn.disabled) return;
+                    if (isSubmitting) return; // Block multiple submissions
+                    
+                    isSubmitting = true;
                     saveBtn.disabled = true;
                     saveBtn.textContent = 'Guardando...';
 
@@ -683,6 +687,7 @@
                         showAlert("No se pudo guardar la transacción.");
                         saveBtn.disabled = false;
                         saveBtn.textContent = 'Guardar Transacción';
+                        isSubmitting = false; // Re-enable on error
                     }
                 });
             }
