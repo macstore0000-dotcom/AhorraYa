@@ -169,6 +169,7 @@
                     <div class="dashboard-card"><h3 class="text-lg font-semibold mb-4">Fuentes de Ingreso</h3><canvas id="monthly-income-chart"></canvas></div>
                     <div class="dashboard-card"><h3 class="text-lg font-semibold mb-4">Composición de Gastos</h3><canvas id="monthly-composition-chart"></canvas></div>
                     <div class="dashboard-card"><h3 class="text-lg font-semibold mb-4">Métodos de Pago</h3><canvas id="monthly-payment-chart"></canvas></div>
+                    <div id="expense-breakdown-container" class="contents"></div>
                 </div>
             </div>
             
@@ -330,6 +331,7 @@
             let transactionsUnsubscribe = null;
             let allTransactions = [];
             let chartInstances = {};
+            let dynamicChartInstances = [];
             let inactivityTimer;
             let datetimeInterval = null;
             let masterCategories = {};
@@ -538,6 +540,7 @@
                 generateMonthlyIncomeChart(monthlyTransactions);
                 generateMonthlyCompositionChart(monthlyTransactions);
                 generateMonthlyPaymentChart(monthlyTransactions);
+                generateBreakdownCharts(monthlyTransactions);
             }
             function updateAnnualDashboard() {
                 const year = yearSelector.value;
@@ -585,6 +588,91 @@
                 const grouped = transactions.filter(t => t.type !== 'Ingreso').reduce((acc, t) => { acc[t.paymentMethod] = (acc[t.paymentMethod] || 0) + parseFloat(t.amount); return acc; }, {});
                 renderChart('monthly-payment-chart', 'pie', { labels: Object.keys(grouped), datasets: [{ data: Object.values(grouped), backgroundColor: ['#60a5fa', '#c084fc', '#f472b6', '#4ade80'] }] }, { responsive: true });
             }
+            
+            function generateBreakdownCharts(transactions) {
+                const container = document.getElementById('expense-breakdown-container');
+                
+                // Limpiar gráficos anteriores
+                dynamicChartInstances.forEach(chart => chart.destroy());
+                dynamicChartInstances = [];
+                container.innerHTML = '';
+
+                const expenses = transactions.filter(t => t.type !== 'Ingreso');
+                const groups = {};
+                
+                // Agrupar por Categoría -> Subcategoría
+                expenses.forEach(t => {
+                   if (!groups[t.category]) groups[t.category] = {};
+                   groups[t.category][t.subcategory] = (groups[t.category][t.subcategory] || 0) + parseFloat(t.amount); 
+                });
+
+                // Generar un gráfico por cada Categoría encontrada
+                Object.keys(groups).sort().forEach((cat, i) => {
+                    const card = document.createElement('div');
+                    card.className = 'dashboard-card';
+                    
+                    const h3 = document.createElement('h3');
+                    h3.className = 'text-lg font-semibold mb-4';
+                    h3.textContent = cat;
+                    card.appendChild(h3);
+                    
+                    const canvasContainer = document.createElement('div');
+                    // canvasContainer.style.height = '250px'; // Altura opcional
+                    const canvas = document.createElement('canvas');
+                    canvasContainer.appendChild(canvas);
+                    card.appendChild(canvasContainer);
+                    
+                    container.appendChild(card);
+
+                    const ctx = canvas.getContext('2d');
+                    const sortedSubcats = Object.keys(groups[cat]).sort((a, b) => groups[cat][b] - groups[cat][a]); // Ordenar por monto descendente
+                    const data = sortedSubcats.map(sub => groups[cat][sub]);
+                    
+                    // Paleta de colores rotativa
+                    const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
+                    const color = colors[i % colors.length];
+
+                    const chart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: sortedSubcats,
+                            datasets: [{
+                                label: 'Monto (S/)',
+                                data: data,
+                                backgroundColor: color,
+                                borderRadius: 4,
+                                barPercentage: 0.7
+                            }]
+                        },
+                        options: {
+                            indexAxis: 'y', // Gráfico horizontal para leer mejor las etiquetas
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            return new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN' }).format(context.raw);
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    ticks: {
+                                        callback: function(value) {
+                                            return 'S/ ' + value;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                    dynamicChartInstances.push(chart);
+                });
+            }
+
             function generateAnnualFlowChart(transactions) {
                 const monthlyData = Array(12).fill(null).map(() => ({ income: 0, expense: 0 }));
                 transactions.forEach(t => {
