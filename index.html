@@ -128,7 +128,11 @@
 
             <!-- Contenido de las Pestañas -->
             <div id="transactions-content" class="tab-content">
-                <div class="flex justify-end mb-4">
+                <div class="flex justify-end mb-4 gap-2">
+                    <button id="export-csv-btn" class="flex items-center gap-2 px-4 py-2 text-primary bg-primary/10 rounded-md hover:bg-primary/20 transition-colors">
+                        <i data-lucide="download" class="w-5 h-5"></i>
+                        Exportar CSV
+                    </button>
                     <button id="add-transaction-btn" class="flex items-center gap-2 px-4 py-2 text-white bg-secondary rounded-md hover:bg-secondary/90 transition-colors">
                         <i data-lucide="plus-circle" class="w-5 h-5"></i>
                         Nueva Transacción
@@ -423,6 +427,7 @@
             
             setupTabs();
             setupTransactionModal();
+            setupExport();
             setupPasswordModal();
             setupAdminListeners();
 
@@ -729,6 +734,50 @@
                     });
                 });
                 updateButtonStyle(document.querySelector('.tab-button.active'));
+            }
+            
+            function setupExport() {
+                const exportBtn = document.getElementById('export-csv-btn');
+                exportBtn.addEventListener('click', () => {
+                    if (!allTransactions || allTransactions.length === 0) {
+                        showAlert("No hay transacciones para exportar.");
+                        return;
+                    }
+
+                    // Definir cabeceras
+                    const headers = ["Fecha", "Tipo", "Categoría", "Subcategoría", "Detalle", "Monto", "Método de Pago"];
+                    
+                    // Añadir BOM para que Excel abra correctamente caracteres especiales (tildes, ñ)
+                    const bom = "\uFEFF";
+                    
+                    // Mapear datos
+                    const rows = allTransactions.map(t => [
+                        t.date,
+                        t.type,
+                        t.category,
+                        t.subcategory,
+                        `"${(t.detail || '').replace(/"/g, '""')}"`, // Escapar comillas y envolver en comillas
+                        t.amount,
+                        t.paymentMethod
+                    ]);
+
+                    // Combinar todo
+                    const csvContent = bom + [
+                        headers.join(','), 
+                        ...rows.map(row => row.join(','))
+                    ].join('\n');
+
+                    // Crear blob y link
+                    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement("a");
+                    link.setAttribute("href", url);
+                    link.setAttribute("download", `transacciones_${new Date().toISOString().slice(0,10)}.csv`);
+                    link.style.visibility = 'hidden';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                });
             }
 
             function setupTransactionModal() {
