@@ -572,10 +572,34 @@
                 const ctx = document.getElementById(canvasId).getContext('2d');
                 chartInstances[canvasId] = new Chart(ctx, { type, data, options });
             }
+            
             function generateMonthlyExpensesChart(transactions) {
-                const grouped = transactions.filter(t => t.type !== 'Ingreso').reduce((acc, t) => { acc[t.subcategory] = (acc[t.subcategory] || 0) + parseFloat(t.amount); return acc; }, {});
-                renderChart('monthly-expenses-chart', 'bar', { labels: Object.keys(grouped), datasets: [{ label: 'Gastos', data: Object.values(grouped), backgroundColor: '#fb923c' }] }, { indexAxis: 'y', responsive: true });
+                // Agrupar gastos por subcategoría y sumar montos
+                const grouped = transactions.filter(t => t.type !== 'Ingreso').reduce((acc, t) => {
+                    acc[t.subcategory] = (acc[t.subcategory] || 0) + parseFloat(t.amount);
+                    return acc;
+                }, {});
+
+                // Ordenar por monto de mayor a menor
+                const sortedEntries = Object.entries(grouped).sort((a, b) => b[1] - a[1]);
+                
+                // Separar de nuevo en arrays para el gráfico
+                const sortedLabels = sortedEntries.map(e => e[0]);
+                const sortedData = sortedEntries.map(e => e[1]);
+
+                renderChart('monthly-expenses-chart', 'bar', {
+                    labels: sortedLabels,
+                    datasets: [{
+                        label: 'Gastos',
+                        data: sortedData,
+                        backgroundColor: '#fb923c'
+                    }]
+                }, {
+                    indexAxis: 'y',
+                    responsive: true
+                });
             }
+
             function generateMonthlyIncomeChart(transactions) {
                 const grouped = transactions.filter(t => t.type === 'Ingreso').reduce((acc, t) => { acc[t.subcategory] = (acc[t.subcategory] || 0) + parseFloat(t.amount); return acc; }, {});
                 renderChart('monthly-income-chart', 'bar', { labels: Object.keys(grouped), datasets: [{ label: 'Ingresos', data: Object.values(grouped), backgroundColor: '#34d399' }] }, { responsive: true });
