@@ -8,6 +8,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chart.js DataLabels Plugin -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
     <!-- Lucide Icons CDN -->
     <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/lucide.min.js"></script>
     <script>
@@ -313,7 +315,13 @@
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, updatePassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         import { getFirestore, collection, addDoc, query, onSnapshot, deleteDoc, doc, serverTimestamp, orderBy, getDoc, setDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
         
-        window.addEventListener('load', () => { if (typeof lucide !== 'undefined') lucide.createIcons() });
+        window.addEventListener('load', () => { 
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+            // Registrar el plugin de datalabels para todos los gráficos
+            if (typeof ChartDataLabels !== 'undefined') {
+                Chart.register(ChartDataLabels);
+            }
+        });
         
         window.addEventListener('DOMContentLoaded', () => {
             
@@ -587,8 +595,6 @@
 
                 // Ordenar por monto de mayor a menor
                 const sortedEntries = Object.entries(grouped).sort((a, b) => b[1] - a[1]);
-                
-                // Separar de nuevo en arrays para el gráfico
                 const sortedLabels = sortedEntries.map(e => e[0]);
                 const sortedData = sortedEntries.map(e => e[1]);
 
@@ -601,21 +607,70 @@
                     }]
                 }, {
                     indexAxis: 'y',
-                    responsive: true
+                    responsive: true,
+                    plugins: {
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'end',
+                            color: '#555',
+                            formatter: function(value) { return 'S/ ' + value.toFixed(2); }
+                        }
+                    },
+                    layout: {
+                        padding: { right: 50 } // Espacio para la etiqueta
+                    }
                 });
             }
 
             function generateMonthlyIncomeChart(transactions) {
                 const grouped = transactions.filter(t => t.type === 'Ingreso').reduce((acc, t) => { acc[t.subcategory] = (acc[t.subcategory] || 0) + parseFloat(t.amount); return acc; }, {});
-                renderChart('monthly-income-chart', 'bar', { labels: Object.keys(grouped), datasets: [{ label: 'Ingresos', data: Object.values(grouped), backgroundColor: '#34d399' }] }, { responsive: true });
+                renderChart('monthly-income-chart', 'bar', { 
+                    labels: Object.keys(grouped), 
+                    datasets: [{ label: 'Ingresos', data: Object.values(grouped), backgroundColor: '#34d399' }] 
+                }, { 
+                    responsive: true,
+                    plugins: {
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'top', // Para barras verticales
+                            color: '#555',
+                            formatter: function(value) { return 'S/ ' + value.toFixed(2); }
+                        }
+                    },
+                    layout: { padding: { top: 30 } }
+                });
             }
             function generateMonthlyCompositionChart(transactions) {
                 const grouped = transactions.filter(t => t.type !== 'Ingreso').reduce((acc, t) => { acc[t.category] = (acc[t.category] || 0) + parseFloat(t.amount); return acc; }, {});
-                renderChart('monthly-composition-chart', 'doughnut', { labels: Object.keys(grouped), datasets: [{ data: Object.values(grouped), backgroundColor: ['#f87171', '#fbbf24', '#a78bfa'] }] }, { responsive: true });
+                renderChart('monthly-composition-chart', 'doughnut', { 
+                    labels: Object.keys(grouped), 
+                    datasets: [{ data: Object.values(grouped), backgroundColor: ['#f87171', '#fbbf24', '#a78bfa'] }] 
+                }, { 
+                    responsive: true,
+                    plugins: {
+                        datalabels: {
+                            color: '#fff',
+                            font: { weight: 'bold' },
+                            formatter: function(value) { return 'S/ ' + value.toFixed(0); }
+                        }
+                    }
+                });
             }
             function generateMonthlyPaymentChart(transactions) {
                 const grouped = transactions.filter(t => t.type !== 'Ingreso').reduce((acc, t) => { acc[t.paymentMethod] = (acc[t.paymentMethod] || 0) + parseFloat(t.amount); return acc; }, {});
-                renderChart('monthly-payment-chart', 'pie', { labels: Object.keys(grouped), datasets: [{ data: Object.values(grouped), backgroundColor: ['#60a5fa', '#c084fc', '#f472b6', '#4ade80'] }] }, { responsive: true });
+                renderChart('monthly-payment-chart', 'pie', { 
+                    labels: Object.keys(grouped), 
+                    datasets: [{ data: Object.values(grouped), backgroundColor: ['#60a5fa', '#c084fc', '#f472b6', '#4ade80'] }] 
+                }, { 
+                    responsive: true,
+                    plugins: {
+                        datalabels: {
+                            color: '#fff',
+                            font: { weight: 'bold' },
+                            formatter: function(value) { return 'S/ ' + value.toFixed(0); }
+                        }
+                    }
+                });
             }
             
             function generateBreakdownCharts(transactions) {
@@ -677,8 +732,15 @@
                             indexAxis: 'y', // Gráfico horizontal para leer mejor las etiquetas
                             responsive: true,
                             maintainAspectRatio: true,
+                            layout: { padding: { right: 50 } }, // Espacio para la etiqueta
                             plugins: {
                                 legend: { display: false },
+                                datalabels: {
+                                    anchor: 'end',
+                                    align: 'end',
+                                    color: '#555',
+                                    formatter: function(value) { return 'S/ ' + value.toFixed(2); }
+                                },
                                 tooltip: {
                                     callbacks: {
                                         label: function(context) {
@@ -708,11 +770,32 @@
                     const monthIndex = parseInt(t.date.substring(5, 7), 10) - 1;
                     if (t.type === 'Ingreso') monthlyData[monthIndex].income += parseFloat(t.amount); else monthlyData[monthIndex].expense += parseFloat(t.amount);
                 });
-                renderChart('annual-flow-chart', 'bar', { labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'], datasets: [{ label: 'Ingresos', data: monthlyData.map(d => d.income), backgroundColor: '#34d399' }, { label: 'Gastos', data: monthlyData.map(d => d.expense), backgroundColor: '#f87171' }] }, { responsive: true, scales: { x: { stacked: false }, y: { stacked: false } } });
+                renderChart('annual-flow-chart', 'bar', { 
+                    labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'], 
+                    datasets: [{ label: 'Ingresos', data: monthlyData.map(d => d.income), backgroundColor: '#34d399' }, { label: 'Gastos', data: monthlyData.map(d => d.expense), backgroundColor: '#f87171' }] 
+                }, { 
+                    responsive: true, 
+                    scales: { x: { stacked: false }, y: { stacked: false } },
+                    plugins: {
+                        datalabels: { display: false } // No mostrar etiquetas en el anual por saturación
+                    }
+                });
             }
             function generateAnnualCompositionChart(transactions) {
                 const grouped = transactions.filter(t => t.type !== 'Ingreso').reduce((acc, t) => { acc[t.category] = (acc[t.category] || 0) + parseFloat(t.amount); return acc; }, {});
-                renderChart('annual-composition-chart', 'doughnut', { labels: Object.keys(grouped), datasets: [{ data: Object.values(grouped), backgroundColor: ['#f87171', '#fbbf24', '#a78bfa'] }] }, { responsive: true });
+                renderChart('annual-composition-chart', 'doughnut', { 
+                    labels: Object.keys(grouped), 
+                    datasets: [{ data: Object.values(grouped), backgroundColor: ['#f87171', '#fbbf24', '#a78bfa'] }] 
+                }, { 
+                    responsive: true,
+                    plugins: {
+                        datalabels: {
+                            color: '#fff',
+                            font: { weight: 'bold' },
+                            formatter: function(value) { return 'S/ ' + value.toFixed(0); }
+                        }
+                    }
+                });
             }
 
             function setupTabs() {
