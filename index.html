@@ -122,6 +122,9 @@
                     <button class="tab-button" data-tab="annual">
                         <i data-lucide="bar-chart-2" class="inline-block w-5 h-5 mr-2"></i>Dashboard Anual
                     </button>
+                    <button class="tab-button" data-tab="custom-report">
+                        <i data-lucide="file-search" class="inline-block w-5 h-5 mr-2"></i>Reporte
+                    </button>
                     <button class="tab-button" id="admin-tab-btn" data-tab="admin" style="display: none;">
                         <i data-lucide="settings" class="inline-block w-5 h-5 mr-2"></i>Administración
                     </button>
@@ -193,6 +196,44 @@
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div class="dashboard-card"><h3 class="text-lg font-semibold mb-4">Ingresos vs Gastos por Mes</h3><canvas id="annual-flow-chart"></canvas></div>
                     <div class="dashboard-card"><h3 class="text-lg font-semibold mb-4">Composición Anual de Gastos</h3><canvas id="annual-composition-chart"></canvas></div>
+                </div>
+            </div>
+
+            <div id="custom-report-content" class="tab-content hidden">
+                <div class="bg-card p-4 rounded-lg mb-6 flex items-center gap-4">
+                    <label for="report-subcategory" class="font-semibold whitespace-nowrap">Buscar Subcategoría:</label>
+                    <select id="report-subcategory" class="border border-gray-300 rounded-md p-2 flex-grow">
+                        <option value="">Seleccione una subcategoría...</option>
+                    </select>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div class="dashboard-card">
+                        <h3 class="text-lg font-semibold mb-4 text-primary">Resumen por Año</h3>
+                        <div id="report-annual-summary" class="space-y-3 text-sm">Selecciona una subcategoría.</div>
+                    </div>
+                    <div class="dashboard-card">
+                        <h3 class="text-lg font-semibold mb-4 text-primary">Resumen por Mes</h3>
+                        <div id="report-monthly-summary" class="space-y-3 text-sm max-h-60 overflow-y-auto">Selecciona una subcategoría.</div>
+                    </div>
+                </div>
+
+                <div class="bg-card p-4 rounded-lg shadow-sm overflow-x-auto">
+                    <h3 class="text-lg font-semibold mb-4 text-primary">Detalle de Transacciones</h3>
+                    <table class="w-full text-sm text-left text-gray-500">
+                        <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                            <tr>
+                                <th scope="col" class="px-6 py-3">Fecha</th>
+                                <th scope="col" class="px-6 py-3">Categoría</th>
+                                <th scope="col" class="px-6 py-3">Detalle</th>
+                                <th scope="col" class="px-6 py-3">Medio de Pago</th>
+                                <th scope="col" class="px-6 py-3 text-right">Monto</th>
+                            </tr>
+                        </thead>
+                        <tbody id="report-table-body">
+                            <tr><td colspan="5" class="text-center py-4">Selecciona una subcategoría para ver el detalle.</td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
@@ -359,6 +400,7 @@
             const monthSelector = document.getElementById('month-selector');
             const yearSelector = document.getElementById('year-selector');
             const adminTab = document.getElementById('admin-tab-btn');
+            const reportSubcategorySelect = document.getElementById('report-subcategory');
 
             // --- LÓGICA DE MANEJO DE ESTADO DE AUTENTICACIÓN ---
             
@@ -432,6 +474,7 @@
             logoutButton.addEventListener('click', () => signOut(auth));
             monthSelector.addEventListener('change', () => updateDashboards());
             yearSelector.addEventListener('change', () => updateDashboards());
+            reportSubcategorySelect.addEventListener('change', (e) => generateCustomReport(e.target.value));
             
             setupTabs();
             setupTransactionModal();
@@ -492,6 +535,8 @@
                     allTransactions = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
                     renderTransactionsTable();
                     updateDashboards();
+                    populateReportSubcategories();
+                    if (reportSubcategorySelect.value) generateCustomReport(reportSubcategorySelect.value);
                 });
             }
 
@@ -796,6 +841,91 @@
                         }
                     }
                 });
+            }
+
+            function populateReportSubcategories() {
+                const currentSelection = reportSubcategorySelect.value;
+                const uniqueSubcategories = [...new Set(allTransactions.map(t => t.subcategory))].sort((a, b) => a.localeCompare(b));
+                
+                reportSubcategorySelect.innerHTML = '<option value="">Seleccione una subcategoría...</option>';
+                uniqueSubcategories.forEach(sub => {
+                    if(sub) { // Evita elementos vacíos
+                        const option = document.createElement('option');
+                        option.value = sub;
+                        option.textContent = sub;
+                        reportSubcategorySelect.appendChild(option);
+                    }
+                });
+                
+                if (uniqueSubcategories.includes(currentSelection)) {
+                    reportSubcategorySelect.value = currentSelection;
+                }
+            }
+
+            function generateCustomReport(subcategory) {
+                const annualContainer = document.getElementById('report-annual-summary');
+                const monthlyContainer = document.getElementById('report-monthly-summary');
+                const tableBody = document.getElementById('report-table-body');
+
+                if (!subcategory) {
+                    annualContainer.innerHTML = 'Selecciona una subcategoría.';
+                    monthlyContainer.innerHTML = 'Selecciona una subcategoría.';
+                    tableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4">Selecciona una subcategoría para ver el detalle.</td></tr>';
+                    return;
+                }
+
+                const filtered = allTransactions.filter(t => t.subcategory === subcategory);
+                
+                if (filtered.length === 0) {
+                    annualContainer.innerHTML = 'No hay datos.';
+                    monthlyContainer.innerHTML = 'No hay datos.';
+                    tableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4">No se encontraron transacciones.</td></tr>';
+                    return;
+                }
+
+                const annualTotals = {};
+                const monthlyTotals = {};
+
+                filtered.forEach(t => {
+                    const year = t.date.substring(0, 4);
+                    const month = t.date.substring(0, 7); // Formato YYYY-MM
+                    const amount = parseFloat(t.amount);
+
+                    annualTotals[year] = (annualTotals[year] || 0) + amount;
+                    monthlyTotals[month] = (monthlyTotals[month] || 0) + amount;
+                });
+
+                // Renderizar Anual (Descendente)
+                annualContainer.innerHTML = Object.keys(annualTotals).sort().reverse().map(year => `
+                    <div class="flex justify-between items-center p-3 bg-gray-50 rounded border border-gray-200">
+                        <span class="font-bold text-gray-700">${year}</span>
+                        <span class="text-primary font-bold text-base">S/ ${annualTotals[year].toFixed(2)}</span>
+                    </div>
+                `).join('');
+
+                // Renderizar Mensual (Descendente)
+                monthlyContainer.innerHTML = Object.keys(monthlyTotals).sort().reverse().map(month => `
+                    <div class="flex justify-between items-center p-3 bg-gray-50 rounded border border-gray-200">
+                        <span class="font-bold text-gray-700">${month}</span>
+                        <span class="text-primary font-bold text-base">S/ ${monthlyTotals[month].toFixed(2)}</span>
+                    </div>
+                `).join('');
+
+                // Renderizar Detalles (Tabla)
+                tableBody.innerHTML = filtered.map(t => {
+                    const isIncome = t.type === 'Ingreso';
+                    const amountClass = isIncome ? 'text-green-600' : 'text-red-600';
+                    const sign = isIncome ? '+' : '-';
+                    return `
+                        <tr class="bg-white border-b hover:bg-gray-50">
+                            <td class="px-6 py-4">${t.date}</td>
+                            <td class="px-6 py-4">${t.category}</td>
+                            <td class="px-6 py-4 text-gray-500">${t.detail || '-'}</td>
+                            <td class="px-6 py-4">${t.paymentMethod || '-'}</td>
+                            <td class="px-6 py-4 text-right font-bold ${amountClass}">${sign}S/ ${parseFloat(t.amount).toFixed(2)}</td>
+                        </tr>
+                    `;
+                }).join('');
             }
 
             function setupTabs() {
