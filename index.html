@@ -128,6 +128,9 @@
                     <button class="tab-button whitespace-nowrap" data-tab="custom-report">
                         <i data-lucide="file-search" class="inline-block w-5 h-5 mr-2"></i>Reporte
                     </button>
+                    <button class="tab-button whitespace-nowrap" data-tab="ai-analysis">
+                        <i data-lucide="sparkles" class="inline-block w-5 h-5 mr-2"></i>Análisis IA
+                    </button>
                     <button class="tab-button whitespace-nowrap" id="admin-tab-btn" data-tab="admin" style="display: none;">
                         <i data-lucide="settings" class="inline-block w-5 h-5 mr-2"></i>Administración
                     </button>
@@ -301,6 +304,38 @@
                 </div>
             </div>
 
+            <div id="ai-analysis-content" class="tab-content hidden">
+                <div class="max-w-4xl mx-auto dashboard-card">
+                    <h2 class="text-2xl font-bold mb-6 text-primary border-b pb-4 flex items-center gap-2">
+                        <i data-lucide="brain-circuit" class="w-6 h-6"></i> Asesor Financiero IA
+                    </h2>
+                    <p class="text-text-secondary mb-6">Obtén un análisis personalizado de tus finanzas impulsado por Inteligencia Artificial. Selecciona el período que deseas evaluar.</p>
+                    
+                    <div class="flex flex-col sm:flex-row gap-4 mb-6">
+                        <select id="ai-period" class="border border-gray-300 rounded-md p-2 flex-grow focus:ring-primary focus:border-primary">
+                            <option value="current-month">Mes Actual</option>
+                            <option value="last-3-months">Últimos 3 Meses</option>
+                            <option value="last-year">Último Año</option>
+                        </select>
+                        <button id="analyze-ai-btn" class="px-6 py-2 text-white font-bold bg-primary rounded-md hover:bg-primary/90 transition-colors flex items-center justify-center gap-2">
+                            <i data-lucide="sparkles" class="w-5 h-5"></i> Analizar mis finanzas
+                        </button>
+                    </div>
+                    
+                    <div id="ai-loading" class="hidden flex-col items-center justify-center py-12">
+                        <i data-lucide="loader-2" class="w-12 h-12 animate-spin text-primary mb-4"></i>
+                        <p class="text-lg font-medium text-text-primary">Analizando tus patrones de gasto...</p>
+                        <p class="text-sm text-text-secondary">Generando recomendaciones personalizadas</p>
+                    </div>
+                    
+                    <div id="ai-result-container" class="hidden bg-gray-50 rounded-lg p-6 border border-gray-200 shadow-inner">
+                        <div id="ai-result-content" class="prose max-w-none text-text-primary">
+                            <!-- Contenido de la IA se inserta aquí -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div id="admin-content" class="tab-content hidden">
                  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     <div class="dashboard-card">
@@ -409,6 +444,7 @@
             let masterCategories = {};
             let isSubmitting = false;
             const paymentMethods = ["Tarjeta de Crédito", "Tarjeta de Débito", "Billetera Digital", "Efectivo", "Transferencia"];
+            const GEMINI_API_KEY = "";
 
             const loginView = document.getElementById('login-view');
             const appView = document.getElementById('app-view');
@@ -507,6 +543,8 @@
                 generateCustomReport(reportCategorySelect.value, e.target.value);
             });
             
+            document.getElementById('analyze-ai-btn').addEventListener('click', generateAiAnalysis);
+            
             setupTabs();
             setupTransactionFormListeners();
             setupExport();
@@ -515,18 +553,18 @@
 
             // --- LÓGICA DE DATOS Y ROLES ---
 
-           async function getUserRole(uid) {
-    const userDocRef = doc(db, 'users', uid);
-    const userDocSnap = await getDoc(userDocRef);
+            async function getUserRole(uid) {
+                const userDocRef = doc(db, 'users', uid);
+                const userDocSnap = await getDoc(userDocRef);
 
-    if (userDocSnap.exists()) {
-        currentUserRole = userDocSnap.data().role || 'user';
-    } else {
-        // Primera vez que inicia sesión: crear documento con rol user
-        await setDoc(userDocRef, { email: currentUser.email, role: 'user' });
-        currentUserRole = 'user';
-    }
-}
+                if (userDocSnap.exists()) {
+                    currentUserRole = userDocSnap.data().role || 'user';
+                } else {
+                    // Oike ypy vove: omoheñói kuatia rol user reheve
+                    await setDoc(userDocRef, { email: currentUser.email, role: 'user' });
+                    currentUserRole = 'user';
+                }
+            }
             
             async function loadMasterCategories() {
                 try {
@@ -1238,6 +1276,181 @@
                     if (error.code === 'permission-denied') errorMessage += " Verifique que las reglas de seguridad de Firestore estén actualizadas correctamente.";
                     container.innerHTML = `<div class="text-center p-4 text-red-500">${errorMessage}</div>`;
                 }
+            }
+
+            // --- LÓGICA DE INTELIGENCIA ARTIFICIAL (GEMINI) ---
+            async function generateAiAnalysis() {
+                if (!allTransactions || allTransactions.length === 0) {
+                    showAlert("No hay suficientes transacciones para analizar.");
+                    return;
+                }
+
+                const analyzeAiBtn = document.getElementById('analyze-ai-btn');
+                const aiPeriodSelect = document.getElementById('ai-period');
+                const aiLoading = document.getElementById('ai-loading');
+                const aiResultContainer = document.getElementById('ai-result-container');
+                const aiResultContent = document.getElementById('ai-result-content');
+
+                analyzeAiBtn.disabled = true;
+                aiLoading.classList.remove('hidden');
+                aiLoading.classList.add('flex');
+                aiResultContainer.classList.add('hidden');
+                aiResultContent.innerHTML = '';
+
+                try {
+                    const period = aiPeriodSelect.value;
+                    const filteredTxs = filterTransactionsByPeriod(allTransactions, period);
+                    
+                    if (filteredTxs.length === 0) {
+                        showAlert("No hay transacciones registradas en el período seleccionado.");
+                        analyzeAiBtn.disabled = false;
+                        aiLoading.classList.add('hidden');
+                        aiLoading.classList.remove('flex');
+                        return;
+                    }
+
+                    const metrics = calculateMetrics(filteredTxs);
+                    const prompt = buildAiPrompt(metrics, period);
+                    const responseText = await callGeminiAPI(prompt);
+                    
+                    aiResultContent.innerHTML = formatMarkdown(responseText);
+                    aiResultContainer.classList.remove('hidden');
+                    
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
+                } catch (error) {
+                    console.error(error);
+                    showAlert("Hubo un error al generar el análisis. Verifica tu conexión o intenta más tarde.");
+                } finally {
+                    analyzeAiBtn.disabled = false;
+                    aiLoading.classList.add('hidden');
+                    aiLoading.classList.remove('flex');
+                }
+            }
+
+            function filterTransactionsByPeriod(transactions, period) {
+                const now = new Date();
+                let startDate = new Date();
+                
+                if (period === 'current-month') {
+                    startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                } else if (period === 'last-3-months') {
+                    startDate.setMonth(now.getMonth() - 3);
+                } else if (period === 'last-year') {
+                    startDate.setFullYear(now.getFullYear() - 1);
+                }
+
+                // Ajustar a medianoche
+                startDate.setHours(0, 0, 0, 0);
+
+                return transactions.filter(t => {
+                    const txDate = new Date(t.date + 'T00:00:00'); // Tratar como local
+                    return txDate >= startDate;
+                });
+            }
+
+            function calculateMetrics(transactions) {
+                let income = 0, expense = 0;
+                const categoryCounts = {};
+                const paymentCounts = {};
+
+                transactions.forEach(t => {
+                    const amount = parseFloat(t.amount) || 0;
+                    if (t.type === 'Ingreso') {
+                        income += amount;
+                    } else {
+                        expense += amount;
+                        categoryCounts[t.category] = (categoryCounts[t.category] || 0) + amount;
+                    }
+                    if(t.paymentMethod) {
+                        paymentCounts[t.paymentMethod] = (paymentCounts[t.paymentMethod] || 0) + 1;
+                    }
+                });
+
+                const savingsRate = income > 0 ? (((income - expense) / income) * 100).toFixed(1) : ((expense === 0) ? 0 : -100);
+                
+                const topCategories = Object.entries(categoryCounts)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 3)
+                    .map(e => `${e[0]} (S/ ${e[1].toFixed(2)})`);
+
+                const mostUsedPayment = Object.entries(paymentCounts)
+                    .sort((a, b) => b[1] - a[1])[0]?.[0] || 'N/A';
+
+                return { income, expense, savingsRate, topCategories, mostUsedPayment, txCount: transactions.length };
+            }
+
+            function buildAiPrompt(metrics, period) {
+                const periodText = {
+                    'current-month': 'este mes',
+                    'last-3-months': 'los últimos 3 meses',
+                    'last-year': 'el último año'
+                }[period];
+
+                return `Analiza mis finanzas de ${periodText}. Aquí están mis métricas consolidadas:
+- Ingresos totales: S/ ${metrics.income.toFixed(2)}
+- Gastos totales: S/ ${metrics.expense.toFixed(2)}
+- Tasa de ahorro actual: ${metrics.savingsRate}%
+- Top 3 categorías de mayor gasto: ${metrics.topCategories.length > 0 ? metrics.topCategories.join(', ') : 'Ninguna'}
+- Método de pago más utilizado: ${metrics.mostUsedPayment}
+- Total de transacciones evaluadas: ${metrics.txCount}
+
+Actúa como mi asesor financiero experto. Basado estricta y únicamente en estos datos proporcionados, redacta un reporte directo en español que contenga:
+1. Un resumen ejecutivo breve de mi salud financiera actual.
+2. Identifica áreas de preocupación (por ejemplo, si mi tasa de ahorro es baja/negativa, o si los gastos en una categoría son desproporcionados).
+3. Dame 3 recomendaciones prácticas, concretas y personalizadas para mejorar.
+Usa un tono amigable pero profesional. Emplea formato Markdown con negritas, títulos y viñetas para estructurarlo visualmente.`;
+            }
+
+            async function callGeminiAPI(prompt) {
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${GEMINI_API_KEY}`;
+                const payload = {
+                    contents: [{ parts: [{ text: prompt }] }],
+                    systemInstruction: { parts: [{ text: "Eres un experto asesor financiero personal. Ayudas a las personas a optimizar su presupuesto con consejos claros, directos y motivadores." }] }
+                };
+
+                const attemptFetch = async (retries = 5, delay = 1000) => {
+                    try {
+                        const response = await fetch(url, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                        
+                        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                        const data = await response.json();
+                        return data.candidates[0].content.parts[0].text;
+                    } catch (error) {
+                        if (retries > 0) {
+                            await new Promise(res => setTimeout(res, delay));
+                            return attemptFetch(retries - 1, delay * 2);
+                        }
+                        throw error;
+                    }
+                };
+
+                return attemptFetch();
+            }
+
+            function formatMarkdown(text) {
+                let html = text
+                    .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-primary">$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                    .replace(/^### (.*$)/gim, '<h3 class="text-xl font-bold mt-5 mb-2 text-primary">$1</h3>')
+                    .replace(/^## (.*$)/gim, '<h2 class="text-2xl font-bold mt-6 mb-3 text-primary border-b pb-2">$1</h2>')
+                    .replace(/^# (.*$)/gim, '<h1 class="text-3xl font-bold mt-6 mb-4 text-primary">$1</h1>')
+                    .replace(/^\d+\.\s(.*$)/gim, '<li class="ml-6 list-decimal marker:text-primary mb-2">$1</li>')
+                    .replace(/^\*\s(.*$)/gim, '<li class="ml-6 list-disc marker:text-primary mb-2">$1</li>')
+                    .replace(/^-\s(.*$)/gim, '<li class="ml-6 list-disc marker:text-primary mb-2">$1</li>')
+                    .replace(/\n\n/g, '</p><p class="mb-4 text-gray-700 leading-relaxed">')
+                    .replace(/\n(?!\<li\>|\<h)/g, '<br>');
+                
+                html = html.replace(/(<li class="ml-6 list-disc.*?>.*?<\/li>)(?!<li class="ml-6 list-disc)/gims, "$1</ul>");
+                html = html.replace(/(?<!<\/li>)<li class="ml-6 list-disc/gims, "<ul class='mb-4 space-y-2'><li class=\"ml-6 list-disc");
+                
+                html = html.replace(/(<li class="ml-6 list-decimal.*?>.*?<\/li>)(?!<li class="ml-6 list-decimal)/gims, "$1</ol>");
+                html = html.replace(/(?<!<\/li>)<li class="ml-6 list-decimal/gims, "<ol class='mb-4 space-y-2'><li class=\"ml-6 list-decimal");
+                
+                return `<p class="mb-4 text-gray-700 leading-relaxed">${html}</p>`;
             }
 
             // --- Utilidades ---
