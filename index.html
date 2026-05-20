@@ -1319,7 +1319,11 @@
                     if (typeof lucide !== 'undefined') lucide.createIcons();
                 } catch (error) {
                     console.error(error);
-                    showAlert("Hubo un error al generar el análisis. Verifica tu conexión o intenta más tarde.");
+                    if (error.message && error.message.includes('429')) {
+                        showAlert("Has alcanzado el límite de solicitudes gratuitas de la Inteligencia Artificial. Por favor, espera un par de minutos e inténtalo de nuevo.");
+                    } else {
+                        showAlert("Hubo un error al generar el análisis. Verifica tu conexión o intenta más tarde.");
+                    }
                 } finally {
                     analyzeAiBtn.disabled = false;
                     aiLoading.classList.add('hidden');
@@ -1402,7 +1406,7 @@ Usa un tono amigable pero profesional. Emplea formato Markdown con negritas, tí
             }
 
             async function callGeminiAPI(prompt) {
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${GEMINI_API_KEY}`;
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${GEMINI_API_KEY}`;
                 const payload = {
                     contents: [{ parts: [{ text: prompt }] }],
                     systemInstruction: { parts: [{ text: "Eres un experto asesor financiero personal. Ayudas a las personas a optimizar su presupuesto con consejos claros, directos y motivadores." }] }
@@ -1416,7 +1420,7 @@ Usa un tono amigable pero profesional. Emplea formato Markdown con negritas, tí
                             body: JSON.stringify(payload)
                         });
                         
-                        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                        if (!response.ok) throw new Error(`HTTP_ERROR_${response.status}`);
                         const data = await response.json();
                         return data.candidates[0].content.parts[0].text;
                     } catch (error) {
