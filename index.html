@@ -515,25 +515,18 @@
 
             // --- LÓGICA DE DATOS Y ROLES ---
 
-            async function getUserRole(uid) {
-                const userDocRef = doc(db, 'users', uid);
-                const userDocSnap = await getDoc(userDocRef);
-                const isAdminByEmail = currentUser.email === 'marcocueva@gmail.com';
+           async function getUserRole(uid) {
+    const userDocRef = doc(db, 'users', uid);
+    const userDocSnap = await getDoc(userDocRef);
 
-                if (userDocSnap.exists()) {
-                    const currentRoleInDB = userDocSnap.data().role;
-                    if (isAdminByEmail && currentRoleInDB !== 'admin') {
-                        await setDoc(userDocRef, { role: 'admin' }, { merge: true });
-                        currentUserRole = 'admin';
-                    } else {
-                        currentUserRole = currentRoleInDB || 'user';
-                    }
-                } else {
-                    const initialRole = isAdminByEmail ? 'admin' : 'user';
-                    await setDoc(userDocRef, { email: currentUser.email, role: initialRole });
-                    currentUserRole = initialRole;
-                }
-            }
+    if (userDocSnap.exists()) {
+        currentUserRole = userDocSnap.data().role || 'user';
+    } else {
+        // Primera vez que inicia sesión: crear documento con rol user
+        await setDoc(userDocRef, { email: currentUser.email, role: 'user' });
+        currentUserRole = 'user';
+    }
+}
             
             async function loadMasterCategories() {
                 try {
