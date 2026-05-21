@@ -592,13 +592,17 @@
             function loadTransactions() {
                 if (transactionsUnsubscribe) transactionsUnsubscribe();
                 const transactionsRef = collection(db, "users", currentUser.uid, "transactions");
-                const q = query(transactionsRef, orderBy("createdAt", "desc"));
+                // Usamos orderBy por 'date' en lugar de 'createdAt' para asegurar orden cronológico
+                const q = query(transactionsRef); 
                 transactionsUnsubscribe = onSnapshot(q, (snapshot) => {
                     allTransactions = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+                    
+                    // Ordenamos en memoria de más reciente a más antigua
+                    allTransactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+                    
                     renderTransactionsTable();
                     updateDashboards();
                     
-                    // Actualizar dropdowns de reportes manteniendo la selección actual
                     populateReportCategories();
                     populateReportSubcategories(reportCategorySelect.value);
                     generateCustomReport(reportCategorySelect.value, reportSubcategorySelect.value);
