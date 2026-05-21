@@ -68,6 +68,7 @@
 </head>
 <body class="bg-background text-text-primary">
 
+    <!-- Vista de Login -->
     <div id="login-view" class="flex items-center justify-center min-h-screen">
         <div class="w-full max-w-md p-8 space-y-6 bg-card rounded-xl shadow-lg text-center">
             <div class="inline-block bg-primary/10 p-4 rounded-full">
@@ -89,9 +90,19 @@
                     Ingresar
                 </button>
             </form>
+
+            <!-- Control de versiones en la pantalla de Login -->
+            <div class="pt-4 border-t border-gray-100 flex items-center justify-between text-xs text-text-secondary">
+                <span>Estado del Sistema</span>
+                <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full font-bold flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 bg-green-500 rounded-full inline-block animate-pulse"></span>
+                    V21.05.2026.0 - Estable
+                </span>
+            </div>
         </div>
     </div>
 
+    <!-- Vista Principal de la Aplicación -->
     <div id="app-view" class="hidden">
         <header class="bg-card shadow-md p-4 flex justify-between items-center">
             <h1 class="text-2xl font-bold text-primary">Mi Presupuesto</h1>
@@ -133,6 +144,7 @@
                 </nav>
             </div>
 
+            <!-- Registro -->
             <div id="register-content" class="tab-content">
                 <div class="max-w-2xl mx-auto dashboard-card">
                     <h2 class="text-2xl font-bold mb-6 text-primary border-b pb-4 flex items-center gap-2">
@@ -189,6 +201,7 @@
                 </div>
             </div>
 
+            <!-- Historial -->
             <div id="transactions-content" class="tab-content hidden">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-xl font-bold text-primary">Historial de Transacciones</h2>
@@ -210,11 +223,12 @@
                             </tr>
                         </thead>
                         <tbody id="transactions-table-body">
-                            </tbody>
+                        </tbody>
                     </table>
                 </div>
             </div>
 
+            <!-- Dashboard Mensual -->
             <div id="monthly-content" class="tab-content hidden">
                 <div class="bg-card p-4 rounded-lg mb-6 flex items-center gap-4">
                     <label for="month-selector" class="font-semibold">Seleccionar Mes:</label>
@@ -235,6 +249,7 @@
                 </div>
             </div>
             
+            <!-- Dashboard Anual -->
             <div id="annual-content" class="tab-content hidden">
                  <div class="bg-card p-4 rounded-lg mb-6 flex items-center gap-4">
                     <label for="year-selector" class="font-semibold">Seleccionar Año:</label>
@@ -252,6 +267,7 @@
                 </div>
             </div>
 
+            <!-- Evolución Subcategoría -->
             <div id="evolution-content" class="tab-content hidden">
                 <div class="dashboard-card max-w-4xl mx-auto">
                     <h2 class="text-xl font-bold mb-6 text-primary flex items-center gap-2">
@@ -275,6 +291,7 @@
                 </div>
             </div>
 
+            <!-- Reporte -->
             <div id="custom-report-content" class="tab-content hidden">
                 <div class="bg-card p-4 rounded-lg mb-6 flex flex-col sm:flex-row items-center gap-4">
                     <label for="report-category" class="font-semibold whitespace-nowrap">Categoría:</label>
@@ -318,6 +335,7 @@
                 </div>
             </div>
 
+            <!-- Análisis IA -->
             <div id="ai-analysis-content" class="tab-content hidden">
                 <div class="max-w-4xl mx-auto dashboard-card">
                     <h2 class="text-2xl font-bold mb-6 text-primary border-b pb-4 flex items-center gap-2">
@@ -344,11 +362,12 @@
                     
                     <div id="ai-result-container" class="hidden bg-gray-50 rounded-lg p-6 border border-gray-200 shadow-inner">
                         <div id="ai-result-content" class="prose max-w-none text-text-primary">
-                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
+            <!-- Administración -->
             <div id="admin-content" class="tab-content hidden">
                  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     <div class="dashboard-card">
@@ -413,6 +432,7 @@
         </div>
     </div>
 
+    <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, updatePassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -1489,15 +1509,6 @@ Por favor, redacta un análisis profesional con recomendaciones.`;
                 });
                 const data = await response.json();
                 return data.candidates[0].content.parts[0].text;
-            }
-
-            function formatMarkdown(text) {
-                return text
-                    .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-primary">$1</strong>')
-                    .replace(/^### (.*$)/gim, '<h3 class="text-xl font-bold mt-5 mb-2 text-primary">$1</h3>')
-                    .replace(/^## (.*$)/gim, '<h2 class="text-2xl font-bold mt-6 mb-3 text-primary border-b pb-2">$1</h2>')
-                    .replace(/\n\n/g, '</p><p class="mb-4 text-gray-700 leading-relaxed">')
-                    .replace(/\n/g, '<br>');
             }
 
             // --- UTILIDADES ---
