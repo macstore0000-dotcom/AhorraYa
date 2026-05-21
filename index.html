@@ -4,13 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Control de Presupuesto Personal</title>
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Chart.js DataLabels Plugin -->
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
-    <!-- Lucide Icons CDN -->
     <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/lucide.min.js"></script>
     <script>
       tailwind.config = {
@@ -72,7 +68,6 @@
 </head>
 <body class="bg-background text-text-primary">
 
-    <!-- Vista de Login -->
     <div id="login-view" class="flex items-center justify-center min-h-screen">
         <div class="w-full max-w-md p-8 space-y-6 bg-card rounded-xl shadow-lg text-center">
             <div class="inline-block bg-primary/10 p-4 rounded-full">
@@ -97,7 +92,6 @@
         </div>
     </div>
 
-    <!-- Vista Principal de la Aplicación -->
     <div id="app-view" class="hidden">
         <header class="bg-card shadow-md p-4 flex justify-between items-center">
             <h1 class="text-2xl font-bold text-primary">Mi Presupuesto</h1>
@@ -110,7 +104,6 @@
         </header>
 
         <main class="p-4 md:p-8">
-            <!-- Navegación por Pestañas -->
             <div class="mb-6 border-b border-gray-200 overflow-x-auto">
                 <nav class="-mb-px flex space-x-4 min-w-max" aria-label="Tabs">
                     <button class="tab-button active whitespace-nowrap" data-tab="register">
@@ -140,9 +133,6 @@
                 </nav>
             </div>
 
-            <!-- Contenido de las Pestañas -->
-
-            <!-- Registro -->
             <div id="register-content" class="tab-content">
                 <div class="max-w-2xl mx-auto dashboard-card">
                     <h2 class="text-2xl font-bold mb-6 text-primary border-b pb-4 flex items-center gap-2">
@@ -199,7 +189,6 @@
                 </div>
             </div>
 
-            <!-- Historial -->
             <div id="transactions-content" class="tab-content hidden">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-xl font-bold text-primary">Historial de Transacciones</h2>
@@ -221,13 +210,11 @@
                             </tr>
                         </thead>
                         <tbody id="transactions-table-body">
-                            <!-- Filas se insertarán aquí -->
-                        </tbody>
+                            </tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- Dashboard Mensual -->
             <div id="monthly-content" class="tab-content hidden">
                 <div class="bg-card p-4 rounded-lg mb-6 flex items-center gap-4">
                     <label for="month-selector" class="font-semibold">Seleccionar Mes:</label>
@@ -248,7 +235,6 @@
                 </div>
             </div>
             
-            <!-- Dashboard Anual -->
             <div id="annual-content" class="tab-content hidden">
                  <div class="bg-card p-4 rounded-lg mb-6 flex items-center gap-4">
                     <label for="year-selector" class="font-semibold">Seleccionar Año:</label>
@@ -266,7 +252,6 @@
                 </div>
             </div>
 
-            <!-- Evolución Subcategoría -->
             <div id="evolution-content" class="tab-content hidden">
                 <div class="dashboard-card max-w-4xl mx-auto">
                     <h2 class="text-xl font-bold mb-6 text-primary flex items-center gap-2">
@@ -290,7 +275,6 @@
                 </div>
             </div>
 
-            <!-- Reporte -->
             <div id="custom-report-content" class="tab-content hidden">
                 <div class="bg-card p-4 rounded-lg mb-6 flex flex-col sm:flex-row items-center gap-4">
                     <label for="report-category" class="font-semibold whitespace-nowrap">Categoría:</label>
@@ -334,7 +318,6 @@
                 </div>
             </div>
 
-            <!-- Análisis IA -->
             <div id="ai-analysis-content" class="tab-content hidden">
                 <div class="max-w-4xl mx-auto dashboard-card">
                     <h2 class="text-2xl font-bold mb-6 text-primary border-b pb-4 flex items-center gap-2">
@@ -361,13 +344,11 @@
                     
                     <div id="ai-result-container" class="hidden bg-gray-50 rounded-lg p-6 border border-gray-200 shadow-inner">
                         <div id="ai-result-content" class="prose max-w-none text-text-primary">
-                            <!-- Contenido de la IA se inserta aquí -->
-                        </div>
+                            </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Administración -->
             <div id="admin-content" class="tab-content hidden">
                  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     <div class="dashboard-card">
@@ -388,7 +369,6 @@
         </main>
     </div>
 
-    <!-- Modal para Cambiar Contraseña -->
     <div id="password-modal" class="modal">
         <div class="modal-content">
             <div class="flex justify-between items-center mb-4">
@@ -412,7 +392,6 @@
         </div>
     </div>
 
-    <!-- Alert Modal -->
     <div id="alert-modal" class="modal">
         <div class="modal-content">
              <h3 id="alert-title" class="text-lg font-bold mb-4">Aviso</h3>
@@ -423,7 +402,6 @@
         </div>
     </div>
 
-    <!-- Confirmation Modal -->
     <div id="confirm-modal" class="modal">
         <div class="modal-content">
             <h3 id="confirm-title" class="text-lg font-bold mb-4">Confirmar Acción</h3>
@@ -435,7 +413,6 @@
         </div>
     </div>
 
-    <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, updatePassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -758,7 +735,7 @@
                 });
             }
 
-            // --- GRÁFICOS CON COLORES MÁS NEGROS Y VISIBLES (REQUERIDO POR EL USUARIO) ---
+            // --- GRÁFICOS MANTIENEN SU FORMATO ORIGINAL ---
 
             function renderChart(canvasId, type, data, options) {
                 if (chartInstances[canvasId]) chartInstances[canvasId].destroy();
@@ -790,11 +767,7 @@
                         datalabels: {
                             anchor: 'end',
                             align: 'end',
-                            color: '#000000', // Modificado a negro puro
-                            font: {
-                                weight: 'bold', // Negrita añadida para máxima legibilidad
-                                size: 11
-                            },
+                            color: '#555',
                             formatter: function(value) { return 'S/ ' + value.toFixed(2); }
                         }
                     },
@@ -813,11 +786,7 @@
                         datalabels: {
                             anchor: 'end',
                             align: 'top',
-                            color: '#000000', // Modificado a negro puro
-                            font: {
-                                weight: 'bold', // Negrita añadida
-                                size: 11
-                            },
+                            color: '#555',
                             formatter: function(value) { return 'S/ ' + value.toFixed(2); }
                         }
                     },
@@ -834,8 +803,8 @@
                     responsive: true,
                     plugins: {
                         datalabels: {
-                            color: '#ffffff', // Blanco se mantiene sobre fondos de color, pero en negrita
-                            font: { weight: 'bold', size: 12 },
+                            color: '#fff',
+                            font: { weight: 'bold' },
                             formatter: function(value) { return 'S/ ' + value.toFixed(0); }
                         }
                     }
@@ -851,8 +820,8 @@
                     responsive: true,
                     plugins: {
                         datalabels: {
-                            color: '#ffffff', // Blanco en negrita para pasteles
-                            font: { weight: 'bold', size: 12 },
+                            color: '#fff',
+                            font: { weight: 'bold' },
                             formatter: function(value) { return 'S/ ' + value.toFixed(0); }
                         }
                     }
@@ -917,11 +886,7 @@
                                 datalabels: {
                                     anchor: 'end',
                                     align: 'end',
-                                    color: '#000000', // Modificado a negro puro
-                                    font: {
-                                        weight: 'bold', // Negrita añadida
-                                        size: 11
-                                    },
+                                    color: '#555',
                                     formatter: function(value) { return 'S/ ' + value.toFixed(2); }
                                 }
                             }
@@ -956,15 +921,15 @@
                     responsive: true,
                     plugins: {
                         datalabels: {
-                            color: '#ffffff', // Blanco en negrita para pasteles
-                            font: { weight: 'bold', size: 12 },
+                            color: '#fff',
+                            font: { weight: 'bold' },
                             formatter: function(value) { return 'S/ ' + value.toFixed(0); }
                         }
                     }
                 });
             }
 
-            // --- LÓGICA DE EVOLUCIÓN ---
+            // --- LÓGICA DE EVOLUCIÓN (ETIQUETAS AJUSTADAS A NEGRO PURO Y NEGRITA) ---
             function updateEvolutionSelectors() {
                 const subcatSelect = document.getElementById('evo-subcat');
                 const previousSelection = subcatSelect.value;
@@ -1023,6 +988,7 @@
                         scales: {
                             y: {
                                 beginAtZero: true,
+                                grace: '15%', // Añade un ligero colchón arriba para evitar que se pegue a la leyenda
                                 ticks: {
                                     callback: function(value) { return 'S/ ' + value; }
                                 }
@@ -1034,12 +1000,13 @@
                                     label: function(context) { return 'Total: S/ ' + context.raw.toFixed(2); }
                                 }
                             },
+                            // Aquí se fuerza el pintado en negro puro y negrita para legibilidad impecable
                             datalabels: {
                                 anchor: 'end',
                                 align: 'top',
-                                color: '#000000', // Modificado a negro puro en el dashboard evolutivo también
+                                color: '#000000', // Negro puro
                                 font: {
-                                    weight: 'bold', // Negrita añadida
+                                    weight: 'bold', // Negrita
                                     size: 11
                                 },
                                 formatter: function(value) { 
