@@ -91,12 +91,12 @@
                 </button>
             </form>
 
-            <!-- Control de versiones en la pantalla de Login (Actualizado a v21.05.2026.1) -->
+            <!-- Control de versiones -->
             <div class="pt-4 border-t border-gray-100 flex items-center justify-between text-xs text-text-secondary">
                 <span>Estado del Sistema</span>
                 <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full font-bold flex items-center gap-1">
                     <span class="w-1.5 h-1.5 bg-green-500 rounded-full inline-block animate-pulse"></span>
-                    V21.05.2026.1 - Estable
+                    V21.05.2026.2 - Estable
                 </span>
             </div>
         </div>
@@ -262,14 +262,16 @@
                     <div class="dashboard-card"><h3 class="text-text-secondary">Tasa de Ahorro</h3><p id="annual-savings-rate" class="text-3xl font-bold text-primary"></p></div>
                 </div>
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                    <div class="dashboard-card"><h3 class="text-lg font-semibold mb-4">Ingresos vs Gastos por Mes</h3><canvas id="annual-flow-chart"></canvas></div>
-                    <div class="dashboard-card"><h3 class="text-lg font-semibold mb-4">Composición Anual de Gastos</h3><canvas id="annual-composition-chart"></canvas></div>
+                    <div class="dashboard-card"><h3 class="text-lg font-semibold mb-4">Ingresos vs Gastos por Mes</h3><div class="relative h-80"><canvas id="annual-flow-chart"></canvas></div></div>
+                    <div class="dashboard-card"><h3 class="text-lg font-semibold mb-4">Composición Anual de Gastos</h3><div class="relative h-80 flex justify-center"><canvas id="annual-composition-chart"></canvas></div></div>
                 </div>
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="dashboard-card"><h3 class="text-lg font-semibold mb-4">Evolución de Gastos Necesarios</h3><canvas id="annual-necessary-chart"></canvas></div>
-                    <div class="dashboard-card"><h3 class="text-lg font-semibold mb-4">Evolución de Gastos Deseos</h3><canvas id="annual-wishes-chart"></canvas></div>
-                    <div class="dashboard-card"><h3 class="text-lg font-semibold mb-4">Evolución de Deudas</h3><canvas id="annual-debts-chart"></canvas></div>
+                    <div class="dashboard-card"><h3 class="text-lg font-semibold mb-4">Evolución de Gastos Necesarios</h3><div class="relative h-64"><canvas id="annual-necessary-chart"></canvas></div></div>
+                    <div class="dashboard-card"><h3 class="text-lg font-semibold mb-4">Evolución de Gastos Deseos</h3><div class="relative h-64"><canvas id="annual-wishes-chart"></canvas></div></div>
+                    <div class="dashboard-card"><h3 class="text-lg font-semibold mb-4">Evolución de Deudas</h3><div class="relative h-64"><canvas id="annual-debts-chart"></canvas></div></div>
                 </div>
+                <!-- Nuevo contenedor para el desglose anual de subcategorías -->
+                <div id="annual-expense-breakdown-container" class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6"></div>
             </div>
 
             <!-- Evolución Subcategoría -->
@@ -393,6 +395,7 @@
         </main>
     </div>
 
+    <!-- Modales (Contraseña, Alertas, Confirmación) -->
     <div id="password-modal" class="modal">
         <div class="modal-content">
             <div class="flex justify-between items-center mb-4">
@@ -473,6 +476,7 @@
             let allTransactions = [];
             let chartInstances = {};
             let dynamicChartInstances = [];
+            let annualDynamicChartInstances = []; // Nuevo array para manejar las instancias del dashboard anual
             let evoChartInstance = null;
             let inactivityTimer;
             let datetimeInterval = null;
@@ -624,7 +628,6 @@
                 transactionsUnsubscribe = onSnapshot(q, (snapshot) => {
                     allTransactions = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
                     
-                    // Ordenamos de manera cronológica en memoria (más reciente a más antigua)
                     allTransactions.sort((a, b) => new Date(b.date) - new Date(a.date));
                     
                     renderTransactionsTable();
@@ -638,7 +641,6 @@
                 });
             }
 
-            // Funciones de edición globalizadas
             window.enableEdit = (span) => {
                 span.classList.add('hidden');
                 span.nextElementSibling.classList.remove('hidden');
@@ -746,6 +748,7 @@
                 generateAnnualCategoryTrendChart(annualTransactions, 'Gasto Necesario', 'annual-necessary-chart', '#f87171');
                 generateAnnualCategoryTrendChart(annualTransactions, 'Gastos Deseos', 'annual-wishes-chart', '#fbbf24');
                 generateAnnualCategoryTrendChart(annualTransactions, 'Deudas', 'annual-debts-chart', '#a78bfa');
+                generateAnnualBreakdownCharts(annualTransactions); // Se genera el desglose de subcategorías
             }
 
             function populateYearSelectors() {
@@ -764,7 +767,7 @@
                 });
             }
 
-            // --- GRÁFICOS MANTIENEN SU FORMATO ORIGINAL ---
+            // --- GRÁFICOS ---
 
             function renderChart(canvasId, type, data, options) {
                 if (chartInstances[canvasId]) chartInstances[canvasId].destroy();
@@ -805,7 +808,6 @@
                 });
             }
 
-            // --- GRÁFICOS MANTIENEN SU FORMATO ORIGINAL ---
             function generateMonthlyIncomeChart(transactions) {
                 const grouped = transactions.filter(t => t.type === 'Ingreso').reduce((acc, t) => { acc[t.subcategory] = (acc[t.subcategory] || 0) + parseFloat(t.amount); return acc; }, {});
                 renderChart('monthly-income-chart', 'bar', { 
@@ -871,7 +873,7 @@
                         label: categoryFilter,
                         data: monthlyData,
                         borderColor: color,
-                        backgroundColor: color + '33', // Añade transparencia para el fill
+                        backgroundColor: color + '33',
                         borderWidth: 2,
                         fill: true,
                         tension: 0.4,
@@ -879,6 +881,7 @@
                     }]
                 }, {
                     responsive: true,
+                    maintainAspectRatio: false,
                     scales: {
                         y: {
                             beginAtZero: true,
@@ -888,7 +891,7 @@
                         }
                     },
                     plugins: {
-                        datalabels: { display: false } // Ocultamos los datalabels para gráficos de líneas por limpieza
+                        datalabels: { display: false } 
                     }
                 });
             }
@@ -900,18 +903,17 @@
                     return acc;
                 }, {});
                 
-                // Nueva paleta de colores exclusiva para métodos de pago (sin chocar con las categorías)
                 const paymentColors = {
-                    'Tarjeta de Crédito': '#3b82f6', // Azul
-                    'Tarjeta de Débito': '#0ea5e9',  // Celeste
-                    'Billetera Digital': '#10b981',  // Verde esmeralda
-                    'Efectivo': '#ec4899',           // Rosado
-                    'Transferencia': '#6366f1',      // Índigo
-                    'No especificado': '#94a3b8'     // Gris
+                    'Tarjeta de Crédito': '#3b82f6',
+                    'Tarjeta de Débito': '#0ea5e9',
+                    'Billetera Digital': '#10b981',
+                    'Efectivo': '#ec4899',
+                    'Transferencia': '#6366f1',
+                    'No especificado': '#94a3b8'
                 };
                 
                 const labels = Object.keys(grouped);
-                const bgColors = labels.map(label => paymentColors[label] || '#cbd5e1'); // #cbd5e1 es color por defecto
+                const bgColors = labels.map(label => paymentColors[label] || '#cbd5e1');
                 
                 renderChart('monthly-payment-chart', 'pie', {
                     labels: labels,
@@ -939,13 +941,12 @@
                 dynamicChartInstances = [];
 
                 const expenseTxs = transactions.filter(t => t.type !== 'Ingreso');
-                const categories = [...new Set(expenseTxs.map(t => t.category))].filter(Boolean);
+                const categories = ['Gasto Necesario', 'Gastos Deseos', 'Deudas']; // Forzamos a que sean estas las primordiales
 
-                // Colores específicos para cada categoría, manteniendo consistencia visual
                 const categoryColors = {
-                    'Gasto Necesario': '#f87171', // Rojo
-                    'Gastos Deseos': '#fbbf24',   // Amarillo/Naranja
-                    'Deudas': '#a78bfa'           // Púrpura
+                    'Gasto Necesario': '#f87171',
+                    'Gastos Deseos': '#fbbf24',
+                    'Deudas': '#a78bfa'
                 };
 
                 categories.forEach((category, index) => {
@@ -955,7 +956,6 @@
                         return acc;
                     }, {});
 
-                    // Ordenar de mayor a menor monto
                     const sortedEntries = Object.entries(subcatGrouped).sort((a, b) => b[1] - a[1]);
                     const sortedLabels = sortedEntries.map(e => e[0]);
                     const sortedData = sortedEntries.map(e => e[1]);
@@ -963,11 +963,11 @@
                     if (sortedLabels.length > 0) {
                         const wrapper = document.createElement('div');
                         wrapper.className = 'dashboard-card';
-                        wrapper.innerHTML = `<h3 class="text-lg font-semibold mb-4 text-left">${category}</h3><canvas id="breakdown-chart-${index}"></canvas>`;
+                        wrapper.innerHTML = `<h3 class="text-lg font-semibold mb-4 text-left">${category}</h3><div class="relative h-64"><canvas id="breakdown-chart-${index}"></canvas></div>`;
                         container.appendChild(wrapper);
 
                         const ctx = document.getElementById(`breakdown-chart-${index}`).getContext('2d');
-                        const barColor = categoryColors[category] || '#94a3b8'; // Color por defecto si no está mapeado
+                        const barColor = categoryColors[category] || '#94a3b8';
 
                         const chart = new Chart(ctx, {
                             type: 'bar',
@@ -981,18 +981,15 @@
                                 }]
                             },
                             options: {
-                                indexAxis: 'y', // Configuración para barras horizontales
+                                indexAxis: 'y',
                                 responsive: true,
+                                maintainAspectRatio: false, // Alineado con mejoras visuales previas
                                 scales: {
                                     x: {
                                         beginAtZero: true,
-                                        ticks: {
-                                            callback: function(value) { return 'S/ ' + value; }
-                                        }
+                                        ticks: { callback: function(value) { return 'S/ ' + value; } }
                                     },
-                                    y: {
-                                        grid: { display: false } // Oculta las líneas horizontales para un diseño más limpio
-                                    }
+                                    y: { grid: { display: false } }
                                 },
                                 plugins: {
                                     legend: { display: false },
@@ -1005,10 +1002,88 @@
                                         formatter: function(value) { return 'S/ ' + value.toFixed(2); }
                                     }
                                 },
-                                layout: { padding: { right: 60 } } // Margen derecho para que no se corten las etiquetas de montos
+                                layout: { padding: { right: 60 } }
                             }
                         });
                         dynamicChartInstances.push(chart);
+                    }
+                });
+            }
+
+            // NUEVA FUNCIÓN: Desglose Anual por Subcategorías
+            function generateAnnualBreakdownCharts(transactions) {
+                const container = document.getElementById('annual-expense-breakdown-container');
+                container.innerHTML = '';
+                annualDynamicChartInstances.forEach(chart => chart.destroy());
+                annualDynamicChartInstances = [];
+
+                const expenseTxs = transactions.filter(t => t.type !== 'Ingreso');
+                // Buscamos solo las 3 categorías principales como indicaste
+                const targetCategories = ['Gasto Necesario', 'Gastos Deseos', 'Deudas'];
+
+                const categoryColors = {
+                    'Gasto Necesario': '#f87171',
+                    'Gastos Deseos': '#fbbf24',
+                    'Deudas': '#a78bfa'
+                };
+
+                targetCategories.forEach((category, index) => {
+                    const catTxs = expenseTxs.filter(t => t.category === category);
+                    const subcatGrouped = catTxs.reduce((acc, t) => {
+                        acc[t.subcategory] = (acc[t.subcategory] || 0) + parseFloat(t.amount);
+                        return acc;
+                    }, {});
+
+                    const sortedEntries = Object.entries(subcatGrouped).sort((a, b) => b[1] - a[1]);
+                    const sortedLabels = sortedEntries.map(e => e[0]);
+                    const sortedData = sortedEntries.map(e => e[1]);
+
+                    if (sortedLabels.length > 0) {
+                        const wrapper = document.createElement('div');
+                        wrapper.className = 'dashboard-card';
+                        wrapper.innerHTML = `<h3 class="text-lg font-semibold mb-4 text-left">Subcategorías: ${category}</h3><div class="relative h-64"><canvas id="annual-breakdown-chart-${index}"></canvas></div>`;
+                        container.appendChild(wrapper);
+
+                        const ctx = document.getElementById(`annual-breakdown-chart-${index}`).getContext('2d');
+                        const barColor = categoryColors[category] || '#94a3b8';
+
+                        const chart = new Chart(ctx, {
+                            type: 'bar',
+                            data: {
+                                labels: sortedLabels,
+                                datasets: [{
+                                    label: category,
+                                    data: sortedData,
+                                    backgroundColor: barColor,
+                                    borderRadius: 4
+                                }]
+                            },
+                            options: {
+                                indexAxis: 'y',
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                scales: {
+                                    x: {
+                                        beginAtZero: true,
+                                        ticks: { callback: function(value) { return 'S/ ' + value; } }
+                                    },
+                                    y: { grid: { display: false } }
+                                },
+                                plugins: {
+                                    legend: { display: false },
+                                    datalabels: { 
+                                        anchor: 'end',
+                                        align: 'end',
+                                        offset: 4,
+                                        color: '#555',
+                                        font: { size: 11 },
+                                        formatter: function(value) { return 'S/ ' + value.toFixed(2); }
+                                    }
+                                },
+                                layout: { padding: { right: 60 } }
+                            }
+                        });
+                        annualDynamicChartInstances.push(chart);
                     }
                 });
             }
@@ -1037,6 +1112,7 @@
                     ]
                 }, {
                     responsive: true,
+                    maintainAspectRatio: false,
                     scales: { 
                         y: { 
                             beginAtZero: true,
@@ -1069,6 +1145,7 @@
                     }]
                 }, {
                     responsive: true,
+                    maintainAspectRatio: false,
                     plugins: {
                         datalabels: {
                             color: '#fff',
@@ -1079,7 +1156,7 @@
                 });
             }
 
-            // --- LÓGICA DE EVOLUCIÓN (ETIQUETAS AJUSTADAS A NEGRO PURO Y NEGRITA) ---
+            // --- LÓGICA DE EVOLUCIÓN ---
             function updateEvolutionSelectors() {
                 const subcatSelect = document.getElementById('evo-subcat');
                 const previousSelection = subcatSelect.value;
@@ -1138,7 +1215,7 @@
                         scales: {
                             y: {
                                 beginAtZero: true,
-                                grace: '15%', // Añade un ligero colchón arriba para evitar que se pegue a la leyenda
+                                grace: '15%',
                                 ticks: {
                                     callback: function(value) { return 'S/ ' + value; }
                                 }
@@ -1150,13 +1227,12 @@
                                     label: function(context) { return 'Total: S/ ' + context.raw.toFixed(2); }
                                 }
                             },
-                            // Aquí se fuerza el pintado en negro puro y negrita para legibilidad impecable
                             datalabels: {
                                 anchor: 'end',
                                 align: 'top',
-                                color: '#000000', // Negro puro
+                                color: '#000000',
                                 font: {
-                                    weight: 'bold', // Negrita
+                                    weight: 'bold',
                                     size: 11
                                 },
                                 formatter: function(value) { 
@@ -1192,7 +1268,6 @@
                 }
             }
 
-            // --- LÓGICA DE REPORTES ---
             function populateReportSubcategories(categoryFilter) {
                 const currentSelection = reportSubcategorySelect.value;
                 
