@@ -241,10 +241,10 @@
                     <div class="dashboard-card"><h3 class="text-text-secondary">Tasa de Ahorro</h3><p id="monthly-savings-rate" class="text-3xl font-bold text-primary"></p></div>
                 </div>
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="dashboard-card"><h3 class="text-lg font-semibold mb-4">Gastos por Subcategoría</h3><canvas id="monthly-expenses-chart"></canvas></div>
-                    <div class="dashboard-card"><h3 class="text-lg font-semibold mb-4">Fuentes de Ingreso</h3><canvas id="monthly-income-chart"></canvas></div>
-                    <div class="dashboard-card"><h3 class="text-lg font-semibold mb-4">Composición de Gastos</h3><canvas id="monthly-composition-chart"></canvas></div>
-                    <div class="dashboard-card"><h3 class="text-lg font-semibold mb-4">Métodos de Pago</h3><canvas id="monthly-payment-chart"></canvas></div>
+                    <div class="dashboard-card"><h3 class="text-lg font-semibold mb-4">Gastos por Subcategoría</h3><div class="relative h-72"><canvas id="monthly-expenses-chart"></canvas></div></div>
+                    <div class="dashboard-card"><h3 class="text-lg font-semibold mb-4">Fuentes de Ingreso</h3><div class="relative h-72"><canvas id="monthly-income-chart"></canvas></div></div>
+                    <div class="dashboard-card"><h3 class="text-lg font-semibold mb-4">Composición de Gastos</h3><div class="relative h-64 flex justify-center"><canvas id="monthly-composition-chart"></canvas></div></div>
+                    <div class="dashboard-card"><h3 class="text-lg font-semibold mb-4">Métodos de Pago</h3><div class="relative h-64 flex justify-center"><canvas id="monthly-payment-chart"></canvas></div></div>
                     <div id="expense-breakdown-container" class="contents"></div>
                 </div>
             </div>
@@ -261,9 +261,14 @@
                     <div class="dashboard-card"><h3 class="text-text-secondary">Ahorro Total</h3><p id="annual-savings" class="text-3xl font-bold text-primary"></p></div>
                     <div class="dashboard-card"><h3 class="text-text-secondary">Tasa de Ahorro</h3><p id="annual-savings-rate" class="text-3xl font-bold text-primary"></p></div>
                 </div>
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                     <div class="dashboard-card"><h3 class="text-lg font-semibold mb-4">Ingresos vs Gastos por Mes</h3><canvas id="annual-flow-chart"></canvas></div>
                     <div class="dashboard-card"><h3 class="text-lg font-semibold mb-4">Composición Anual de Gastos</h3><canvas id="annual-composition-chart"></canvas></div>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="dashboard-card"><h3 class="text-lg font-semibold mb-4">Evolución de Gastos Necesarios</h3><canvas id="annual-necessary-chart"></canvas></div>
+                    <div class="dashboard-card"><h3 class="text-lg font-semibold mb-4">Evolución de Gastos Deseos</h3><canvas id="annual-wishes-chart"></canvas></div>
+                    <div class="dashboard-card"><h3 class="text-lg font-semibold mb-4">Evolución de Deudas</h3><canvas id="annual-debts-chart"></canvas></div>
                 </div>
             </div>
 
@@ -738,6 +743,9 @@
                 
                 generateAnnualFlowChart(annualTransactions);
                 generateAnnualCompositionChart(annualTransactions);
+                generateAnnualCategoryTrendChart(annualTransactions, 'Gasto Necesario', 'annual-necessary-chart', '#f87171');
+                generateAnnualCategoryTrendChart(annualTransactions, 'Gastos Deseos', 'annual-wishes-chart', '#fbbf24');
+                generateAnnualCategoryTrendChart(annualTransactions, 'Deudas', 'annual-debts-chart', '#a78bfa');
             }
 
             function populateYearSelectors() {
@@ -784,6 +792,7 @@
                 }, {
                     indexAxis: 'y',
                     responsive: true,
+                    maintainAspectRatio: false,
                     plugins: {
                         datalabels: {
                             anchor: 'end',
@@ -804,6 +813,7 @@
                     datasets: [{ label: 'Ingresos', data: Object.values(grouped), backgroundColor: '#34d399' }] 
                 }, { 
                     responsive: true,
+                    maintainAspectRatio: false,
                     plugins: {
                         datalabels: {
                             anchor: 'end',
@@ -818,28 +828,100 @@
 
             function generateMonthlyCompositionChart(transactions) {
                 const grouped = transactions.filter(t => t.type !== 'Ingreso').reduce((acc, t) => { acc[t.category] = (acc[t.category] || 0) + parseFloat(t.amount); return acc; }, {});
+                
+                const categoryColors = {
+                    'Gasto Necesario': '#f87171',
+                    'Gastos Deseos': '#fbbf24',
+                    'Deudas': '#a78bfa'
+                };
+                const labels = Object.keys(grouped);
+                const bgColors = labels.map(label => categoryColors[label] || '#94a3b8');
+
                 renderChart('monthly-composition-chart', 'doughnut', { 
-                    labels: Object.keys(grouped), 
-                    datasets: [{ data: Object.values(grouped), backgroundColor: ['#f87171', '#fbbf24', '#a78bfa'] }] 
+                    labels: labels, 
+                    datasets: [{ data: Object.values(grouped), backgroundColor: bgColors }] 
                 }, { 
                     responsive: true,
+                    maintainAspectRatio: false,
                     plugins: {
                         datalabels: {
                             color: '#fff',
                             font: { weight: 'bold' },
                             formatter: function(value) { return 'S/ ' + value.toFixed(0); }
                         }
+                    }
+                });
+            }
+
+            function generateAnnualCategoryTrendChart(transactions, categoryFilter, canvasId, color) {
+                const monthlyData = Array(12).fill(0);
+                
+                transactions
+                    .filter(t => t.category === categoryFilter)
+                    .forEach(t => {
+                        const monthIndex = parseInt(t.date.substring(5, 7), 10) - 1;
+                        if (monthIndex >= 0 && monthIndex < 12) {
+                            monthlyData[monthIndex] += parseFloat(t.amount);
+                        }
+                    });
+
+                renderChart(canvasId, 'line', {
+                    labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
+                    datasets: [{
+                        label: categoryFilter,
+                        data: monthlyData,
+                        borderColor: color,
+                        backgroundColor: color + '33', // Añade transparencia para el fill
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: color
+                    }]
+                }, {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) { return 'S/ ' + value; }
+                            }
+                        }
+                    },
+                    plugins: {
+                        datalabels: { display: false } // Ocultamos los datalabels para gráficos de líneas por limpieza
                     }
                 });
             }
 
             function generateMonthlyPaymentChart(transactions) {
-                const grouped = transactions.filter(t => t.type !== 'Ingreso').reduce((acc, t) => { acc[t.paymentMethod] = (acc[t.paymentMethod] || 0) + parseFloat(t.amount); return acc; }, {});
-                renderChart('monthly-payment-chart', 'pie', { 
-                    labels: Object.keys(grouped), 
-                    datasets: [{ data: Object.values(grouped), backgroundColor: ['#60a5fa', '#c084fc', '#f472b6', '#4ade80'] }] 
-                }, { 
+                const grouped = transactions.filter(t => t.type !== 'Ingreso').reduce((acc, t) => {
+                    const method = t.paymentMethod || 'No especificado';
+                    acc[method] = (acc[method] || 0) + parseFloat(t.amount);
+                    return acc;
+                }, {});
+                
+                // Nueva paleta de colores exclusiva para métodos de pago (sin chocar con las categorías)
+                const paymentColors = {
+                    'Tarjeta de Crédito': '#3b82f6', // Azul
+                    'Tarjeta de Débito': '#0ea5e9',  // Celeste
+                    'Billetera Digital': '#10b981',  // Verde esmeralda
+                    'Efectivo': '#ec4899',           // Rosado
+                    'Transferencia': '#6366f1',      // Índigo
+                    'No especificado': '#94a3b8'     // Gris
+                };
+                
+                const labels = Object.keys(grouped);
+                const bgColors = labels.map(label => paymentColors[label] || '#cbd5e1'); // #cbd5e1 es color por defecto
+                
+                renderChart('monthly-payment-chart', 'pie', {
+                    labels: labels,
+                    datasets: [{
+                        data: Object.values(grouped),
+                        backgroundColor: bgColors
+                    }]
+                }, {
                     responsive: true,
+                    maintainAspectRatio: false,
                     plugins: {
                         datalabels: {
                             color: '#fff',
@@ -849,97 +931,143 @@
                     }
                 });
             }
-            
+
             function generateBreakdownCharts(transactions) {
                 const container = document.getElementById('expense-breakdown-container');
+                container.innerHTML = '';
                 dynamicChartInstances.forEach(chart => chart.destroy());
                 dynamicChartInstances = [];
-                container.innerHTML = '';
 
-                const expenses = transactions.filter(t => t.type !== 'Ingreso');
-                const groups = {};
-                
-                expenses.forEach(t => {
-                   if (!groups[t.category]) groups[t.category] = {};
-                   groups[t.category][t.subcategory] = (groups[t.category][t.subcategory] || 0) + parseFloat(t.amount); 
-                });
+                const expenseTxs = transactions.filter(t => t.type !== 'Ingreso');
+                const categories = [...new Set(expenseTxs.map(t => t.category))].filter(Boolean);
 
-                Object.keys(groups).sort().forEach((cat, i) => {
-                    const card = document.createElement('div');
-                    card.className = 'dashboard-card';
-                    
-                    const h3 = document.createElement('h3');
-                    h3.className = 'text-lg font-semibold mb-4';
-                    h3.textContent = cat;
-                    card.appendChild(h3);
-                    
-                    const canvasContainer = document.createElement('div');
-                    const canvas = document.createElement('canvas');
-                    canvasContainer.appendChild(canvas);
-                    card.appendChild(canvasContainer);
-                    container.appendChild(card);
+                // Colores específicos para cada categoría, manteniendo consistencia visual
+                const categoryColors = {
+                    'Gasto Necesario': '#f87171', // Rojo
+                    'Gastos Deseos': '#fbbf24',   // Amarillo/Naranja
+                    'Deudas': '#a78bfa'           // Púrpura
+                };
 
-                    const ctx = canvas.getContext('2d');
-                    const sortedSubcats = Object.keys(groups[cat]).sort((a, b) => groups[cat][b] - groups[cat][a]);
-                    const data = sortedSubcats.map(sub => groups[cat][sub]);
-                    
-                    const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
-                    const color = colors[i % colors.length];
+                categories.forEach((category, index) => {
+                    const catTxs = expenseTxs.filter(t => t.category === category);
+                    const subcatGrouped = catTxs.reduce((acc, t) => {
+                        acc[t.subcategory] = (acc[t.subcategory] || 0) + parseFloat(t.amount);
+                        return acc;
+                    }, {});
 
-                    const chart = new Chart(ctx, {
-                        type: 'bar',
-                        data: {
-                            labels: sortedSubcats,
-                            datasets: [{
-                                label: 'Monto (S/)',
-                                data: data,
-                                backgroundColor: color,
-                                borderRadius: 4,
-                                barPercentage: 0.7
-                            }]
-                        },
-                        options: {
-                            indexAxis: 'y',
-                            responsive: true,
-                            maintainAspectRatio: true,
-                            layout: { padding: { right: 50 } },
-                            plugins: {
-                                legend: { display: false },
-                                datalabels: {
-                                    anchor: 'end',
-                                    align: 'end',
-                                    color: '#555',
-                                    formatter: function(value) { return 'S/ ' + value.toFixed(2); }
-                                }
+                    // Ordenar de mayor a menor monto
+                    const sortedEntries = Object.entries(subcatGrouped).sort((a, b) => b[1] - a[1]);
+                    const sortedLabels = sortedEntries.map(e => e[0]);
+                    const sortedData = sortedEntries.map(e => e[1]);
+
+                    if (sortedLabels.length > 0) {
+                        const wrapper = document.createElement('div');
+                        wrapper.className = 'dashboard-card';
+                        wrapper.innerHTML = `<h3 class="text-lg font-semibold mb-4 text-left">${category}</h3><canvas id="breakdown-chart-${index}"></canvas>`;
+                        container.appendChild(wrapper);
+
+                        const ctx = document.getElementById(`breakdown-chart-${index}`).getContext('2d');
+                        const barColor = categoryColors[category] || '#94a3b8'; // Color por defecto si no está mapeado
+
+                        const chart = new Chart(ctx, {
+                            type: 'bar',
+                            data: {
+                                labels: sortedLabels,
+                                datasets: [{
+                                    label: category,
+                                    data: sortedData,
+                                    backgroundColor: barColor,
+                                    borderRadius: 4
+                                }]
+                            },
+                            options: {
+                                indexAxis: 'y', // Configuración para barras horizontales
+                                responsive: true,
+                                scales: {
+                                    x: {
+                                        beginAtZero: true,
+                                        ticks: {
+                                            callback: function(value) { return 'S/ ' + value; }
+                                        }
+                                    },
+                                    y: {
+                                        grid: { display: false } // Oculta las líneas horizontales para un diseño más limpio
+                                    }
+                                },
+                                plugins: {
+                                    legend: { display: false },
+                                    datalabels: { 
+                                        anchor: 'end',
+                                        align: 'end',
+                                        offset: 4,
+                                        color: '#555',
+                                        font: { size: 11 },
+                                        formatter: function(value) { return 'S/ ' + value.toFixed(2); }
+                                    }
+                                },
+                                layout: { padding: { right: 60 } } // Margen derecho para que no se corten las etiquetas de montos
                             }
-                        }
-                    });
-                    dynamicChartInstances.push(chart);
+                        });
+                        dynamicChartInstances.push(chart);
+                    }
                 });
             }
 
             function generateAnnualFlowChart(transactions) {
-                const monthlyData = Array(12).fill(null).map(() => ({ income: 0, expense: 0 }));
+                const monthlyIncome = Array(12).fill(0);
+                const monthlyExpense = Array(12).fill(0);
+
                 transactions.forEach(t => {
                     const monthIndex = parseInt(t.date.substring(5, 7), 10) - 1;
-                    if (t.type === 'Ingreso') monthlyData[monthIndex].income += parseFloat(t.amount); else monthlyData[monthIndex].expense += parseFloat(t.amount);
+                    if (monthIndex >= 0 && monthIndex < 12) {
+                        const amount = parseFloat(t.amount);
+                        if (t.type === 'Ingreso') {
+                            monthlyIncome[monthIndex] += amount;
+                        } else {
+                            monthlyExpense[monthIndex] += amount;
+                        }
+                    }
                 });
-                renderChart('annual-flow-chart', 'bar', { 
-                    labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'], 
-                    datasets: [{ label: 'Ingresos', data: monthlyData.map(d => d.income), backgroundColor: '#34d399' }, { label: 'Gastos', data: monthlyData.map(d => d.expense), backgroundColor: '#f87171' }] 
-                }, { 
-                    responsive: true, 
-                    scales: { x: { stacked: false }, y: { stacked: false } },
+
+                renderChart('annual-flow-chart', 'bar', {
+                    labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
+                    datasets: [
+                        { label: 'Ingresos', data: monthlyIncome, backgroundColor: '#34d399' },
+                        { label: 'Gastos', data: monthlyExpense, backgroundColor: '#f87171' }
+                    ]
+                }, {
+                    responsive: true,
+                    scales: { 
+                        y: { 
+                            beginAtZero: true,
+                            ticks: { callback: function(value) { return 'S/ ' + value; } }
+                        } 
+                    },
                     plugins: { datalabels: { display: false } }
                 });
             }
 
             function generateAnnualCompositionChart(transactions) {
-                const grouped = transactions.filter(t => t.type !== 'Ingreso').reduce((acc, t) => { acc[t.category] = (acc[t.category] || 0) + parseFloat(t.amount); return acc; }, {});
-                renderChart('annual-composition-chart', 'doughnut', { 
-                    labels: Object.keys(grouped), 
-                    datasets: [{ data: Object.values(grouped), backgroundColor: ['#f87171', '#fbbf24', '#a78bfa'] }] 
-                }, { 
+                const grouped = transactions.filter(t => t.type !== 'Ingreso').reduce((acc, t) => {
+                    acc[t.category] = (acc[t.category] || 0) + parseFloat(t.amount);
+                    return acc;
+                }, {});
+
+                const categoryColors = {
+                    'Gasto Necesario': '#f87171',
+                    'Gastos Deseos': '#fbbf24',
+                    'Deudas': '#a78bfa'
+                };
+                const labels = Object.keys(grouped);
+                const bgColors = labels.map(label => categoryColors[label] || '#94a3b8');
+
+                renderChart('annual-composition-chart', 'pie', {
+                    labels: labels,
+                    datasets: [{
+                        data: Object.values(grouped),
+                        backgroundColor: bgColors
+                    }]
+                }, {
                     responsive: true,
                     plugins: {
                         datalabels: {
