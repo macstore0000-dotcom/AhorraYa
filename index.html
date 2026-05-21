@@ -91,12 +91,12 @@
                 </button>
             </form>
 
-            <!-- Control de versiones en la pantalla de Login -->
+            <!-- Control de versiones en la pantalla de Login (Actualizado a v21.05.2026.1) -->
             <div class="pt-4 border-t border-gray-100 flex items-center justify-between text-xs text-text-secondary">
                 <span>Estado del Sistema</span>
                 <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full font-bold flex items-center gap-1">
                     <span class="w-1.5 h-1.5 bg-green-500 rounded-full inline-block animate-pulse"></span>
-                    V21.05.2026.0 - Estable
+                    V21.05.2026.1 - Estable
                 </span>
             </div>
         </div>
@@ -434,6 +434,8 @@
 
     <!-- Firebase SDKs -->
     <script type="module">
+        const apiKey = ""; // Declarada globalmente al inicio del módulo ES para inyección exitosa
+
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, updatePassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         import { getFirestore, collection, addDoc, query, onSnapshot, deleteDoc, doc, serverTimestamp, orderBy, getDoc, setDoc, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -472,7 +474,6 @@
             let masterCategories = {};
             let isSubmitting = false;
             const paymentMethods = ["Tarjeta de Crédito", "Tarjeta de Débito", "Billetera Digital", "Efectivo", "Transferencia"];
-            const GEMINI_API_KEY = "";
 
             const loginView = document.getElementById('login-view');
             const appView = document.getElementById('app-view');
@@ -795,6 +796,7 @@
                 });
             }
 
+            // --- GRÁFICOS MANTIENEN SU FORMATO ORIGINAL ---
             function generateMonthlyIncomeChart(transactions) {
                 const grouped = transactions.filter(t => t.type === 'Ingreso').reduce((acc, t) => { acc[t.subcategory] = (acc[t.subcategory] || 0) + parseFloat(t.amount); return acc; }, {});
                 renderChart('monthly-income-chart', 'bar', { 
@@ -1062,6 +1064,7 @@
                 }
             }
 
+            // --- LÓGICA DE REPORTES ---
             function populateReportSubcategories(categoryFilter) {
                 const currentSelection = reportSubcategorySelect.value;
                 
@@ -1433,7 +1436,8 @@
                     aiResultContent.innerHTML = formatMarkdown(responseText);
                     aiResultContainer.classList.remove('hidden');
                 } catch (error) {
-                    showAlert("Hubo un error al generar el análisis.");
+                    console.error("Análisis de IA falló:", error);
+                    showAlert("Hubo un error al generar el análisis: " + error.message);
                 } finally {
                     analyzeAiBtn.disabled = false;
                     aiLoading.classList.add('hidden');
@@ -1497,18 +1501,50 @@ Por favor, redacta un análisis profesional con recomendaciones.`;
             }
 
             async function callGeminiAPI(prompt) {
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${GEMINI_API_KEY}`;
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
                 const payload = {
                     contents: [{ parts: [{ text: prompt }] }],
                     systemInstruction: { parts: [{ text: "Eres un experto asesor financiero personal. Ayudas a las personas a optimizar su presupuesto." }] }
                 };
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                const data = await response.json();
-                return data.candidates[0].content.parts[0].text;
+
+                const delays = [1000, 2000, 4000, 8000, 16000];
+                let lastError = null;
+
+                for (let attempt = 0; attempt <= 5; attempt++) {
+                    try {
+                        const response = await fetch(url, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+
+                        const data = await response.json();
+                        if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0]) {
+                            return data.candidates[0].content.parts[0].text;
+                        } else {
+                            throw new Error("Estructura de respuesta inválida de la API");
+                        }
+                    } catch (error) {
+                        lastError = error;
+                        if (attempt < 5) {
+                            await new Promise(resolve => setTimeout(resolve, delays[attempt]));
+                        }
+                    }
+                }
+                throw lastError;
+            }
+
+            function formatMarkdown(text) {
+                return text
+                    .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-primary">$1</strong>')
+                    .replace(/^### (.*$)/gim, '<h3 class="text-xl font-bold mt-5 mb-2 text-primary">$1</h3>')
+                    .replace(/^## (.*$)/gim, '<h2 class="text-2xl font-bold mt-6 mb-3 text-primary border-b pb-2">$1</h2>')
+                    .replace(/\n\n/g, '</p><p class="mb-4 text-gray-700 leading-relaxed">')
+                    .replace(/\n/g, '<br>');
             }
 
             // --- UTILIDADES ---
