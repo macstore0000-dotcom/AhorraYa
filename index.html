@@ -125,6 +125,9 @@
                     <button class="tab-button whitespace-nowrap" data-tab="annual">
                         <i data-lucide="bar-chart-2" class="inline-block w-5 h-5 mr-2"></i>Dashboard Anual
                     </button>
+                    <button class="tab-button whitespace-nowrap" data-tab="evolution">
+                        <i data-lucide="trending-up" class="inline-block w-5 h-5 mr-2"></i>Evolución Subcategoría
+                    </button>
                     <button class="tab-button whitespace-nowrap" data-tab="custom-report">
                         <i data-lucide="file-search" class="inline-block w-5 h-5 mr-2"></i>Reporte
                     </button>
@@ -139,7 +142,7 @@
 
             <!-- Contenido de las Pestañas -->
 
-            <!-- Pestaña de Registro (Nueva) -->
+            <!-- Registro -->
             <div id="register-content" class="tab-content">
                 <div class="max-w-2xl mx-auto dashboard-card">
                     <h2 class="text-2xl font-bold mb-6 text-primary border-b pb-4 flex items-center gap-2">
@@ -196,7 +199,7 @@
                 </div>
             </div>
 
-            <!-- Pestaña del Historial de Transacciones -->
+            <!-- Historial -->
             <div id="transactions-content" class="tab-content hidden">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-xl font-bold text-primary">Historial de Transacciones</h2>
@@ -212,7 +215,7 @@
                                 <th scope="col" class="px-6 py-3">Fecha</th>
                                 <th scope="col" class="px-6 py-3">Categoría</th>
                                 <th scope="col" class="px-6 py-3">Subcategoría</th>
-                                <th scope="col" class="px-6 py-3">Detalle</th>
+                                <th scope="col" class="px-6 py-3">Detalle (Click para editar)</th>
                                 <th scope="col" class="px-6 py-3">Monto</th>
                                 <th scope="col" class="px-6 py-3">Acciones</th>
                             </tr>
@@ -224,6 +227,7 @@
                 </div>
             </div>
 
+            <!-- Dashboard Mensual -->
             <div id="monthly-content" class="tab-content hidden">
                 <div class="bg-card p-4 rounded-lg mb-6 flex items-center gap-4">
                     <label for="month-selector" class="font-semibold">Seleccionar Mes:</label>
@@ -244,6 +248,7 @@
                 </div>
             </div>
             
+            <!-- Dashboard Anual -->
             <div id="annual-content" class="tab-content hidden">
                  <div class="bg-card p-4 rounded-lg mb-6 flex items-center gap-4">
                     <label for="year-selector" class="font-semibold">Seleccionar Año:</label>
@@ -261,15 +266,40 @@
                 </div>
             </div>
 
+            <!-- Evolución Subcategoría -->
+            <div id="evolution-content" class="tab-content hidden">
+                <div class="dashboard-card max-w-4xl mx-auto">
+                    <h2 class="text-xl font-bold mb-6 text-primary flex items-center gap-2">
+                        <i data-lucide="trending-up"></i> Evolución de Gasto / Ingreso por Subcategoría
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <div>
+                            <label for="evo-subcat" class="block text-sm font-medium text-gray-700 mb-1">Seleccionar Subcategoría:</label>
+                            <select id="evo-subcat" class="w-full border border-gray-300 rounded-md p-2 bg-white focus:ring-primary focus:border-primary">
+                                <option value="">Cargando subcategorías...</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="evo-year" class="block text-sm font-medium text-gray-700 mb-1">Seleccionar Año:</label>
+                            <select id="evo-year" class="w-full border border-gray-300 rounded-md p-2 bg-white focus:ring-primary focus:border-primary"></select>
+                        </div>
+                    </div>
+                    <div class="h-80 relative">
+                        <canvas id="evo-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reporte -->
             <div id="custom-report-content" class="tab-content hidden">
                 <div class="bg-card p-4 rounded-lg mb-6 flex flex-col sm:flex-row items-center gap-4">
                     <label for="report-category" class="font-semibold whitespace-nowrap">Categoría:</label>
-                    <select id="report-category" class="border border-gray-300 rounded-md p-2 w-full sm:w-1/3">
+                    <select id="report-category" class="border border-gray-300 rounded-md p-2 w-full sm:w-1/3 border-indigo-200">
                         <option value="">Seleccione una categoría...</option>
                     </select>
                     
                     <label for="report-subcategory" class="font-semibold whitespace-nowrap">Subcategoría:</label>
-                    <select id="report-subcategory" class="border border-gray-300 rounded-md p-2 flex-grow disabled:bg-gray-100" disabled>
+                    <select id="report-subcategory" class="border border-gray-300 rounded-md p-2 flex-grow disabled:bg-gray-100 border-indigo-200" disabled>
                         <option value="">Seleccione una categoría primero...</option>
                     </select>
                 </div>
@@ -304,6 +334,7 @@
                 </div>
             </div>
 
+            <!-- Análisis IA -->
             <div id="ai-analysis-content" class="tab-content hidden">
                 <div class="max-w-4xl mx-auto dashboard-card">
                     <h2 class="text-2xl font-bold mb-6 text-primary border-b pb-4 flex items-center gap-2">
@@ -336,6 +367,7 @@
                 </div>
             </div>
 
+            <!-- Administración -->
             <div id="admin-content" class="tab-content hidden">
                  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     <div class="dashboard-card">
@@ -403,16 +435,14 @@
         </div>
     </div>
 
-
     <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, updatePassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, onSnapshot, deleteDoc, doc, serverTimestamp, orderBy, getDoc, setDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, onSnapshot, deleteDoc, doc, serverTimestamp, orderBy, getDoc, setDoc, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
         
         window.addEventListener('load', () => { 
             if (typeof lucide !== 'undefined') lucide.createIcons();
-            // Registrar el plugin de datalabels para todos los gráficos
             if (typeof ChartDataLabels !== 'undefined') {
                 Chart.register(ChartDataLabels);
             }
@@ -439,6 +469,7 @@
             let allTransactions = [];
             let chartInstances = {};
             let dynamicChartInstances = [];
+            let evoChartInstance = null;
             let inactivityTimer;
             let datetimeInterval = null;
             let masterCategories = {};
@@ -458,7 +489,7 @@
             const reportCategorySelect = document.getElementById('report-category');
             const reportSubcategorySelect = document.getElementById('report-subcategory');
 
-            // --- LÓGICA DE MANEJO DE ESTADO DE AUTENTICACIÓN ---
+            // --- ESTADO DE AUTENTICACIÓN ---
             
             const handleLogin = async (user) => {
                 currentUser = user;
@@ -471,9 +502,7 @@
                 userEmailSpan.textContent = user.email;
                 if (currentUserRole === 'admin') adminTab.style.display = 'flex'; else adminTab.style.display = 'none';
                 
-                // Inicializar formulario de registro
                 initTransactionForm();
-                
                 loadTransactions();
                 resetInactivityTimer();
                 document.addEventListener('mousemove', resetInactivityTimer);
@@ -487,7 +516,7 @@
                 const year = today.getFullYear();
                 const month = (today.getMonth() + 1).toString().padStart(2, '0');
                 monthSelector.value = `${year}-${month}`;
-                populateYearSelector();
+                populateYearSelectors();
                 yearSelector.value = year;
                 updateDashboards();
                 if (typeof lucide !== 'undefined') lucide.createIcons();
@@ -514,7 +543,7 @@
 
             onAuthStateChanged(auth, (user) => user ? handleLogin(user) : handleLogout());
             
-            // --- EVENT LISTENERS (SE CONFIGURAN UNA SOLA VEZ) ---
+            // --- EVENT LISTENERS ---
             
             loginForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
@@ -534,7 +563,6 @@
             monthSelector.addEventListener('change', () => updateDashboards());
             yearSelector.addEventListener('change', () => updateDashboards());
             
-            // Listeners para los reportes
             reportCategorySelect.addEventListener('change', (e) => {
                 populateReportSubcategories(e.target.value);
                 generateCustomReport(e.target.value, reportSubcategorySelect.value);
@@ -551,16 +579,14 @@
             setupPasswordModal();
             setupAdminListeners();
 
-            // --- LÓGICA DE DATOS Y ROLES ---
+            // --- LÓGICA DE CONTROL ---
 
             async function getUserRole(uid) {
                 const userDocRef = doc(db, 'users', uid);
                 const userDocSnap = await getDoc(userDocRef);
-
                 if (userDocSnap.exists()) {
                     currentUserRole = userDocSnap.data().role || 'user';
                 } else {
-                    // Oike ypy vove: omoheñói kuatia rol user reheve
                     await setDoc(userDocRef, { email: currentUser.email, role: 'user' });
                     currentUserRole = 'user';
                 }
@@ -579,12 +605,11 @@
                         masterCategories = defaultCategories;
                         return true;
                     } else {
-                        showAlert("Error de configuración: Las categorías maestras no existen. El administrador debe iniciar sesión primero para crearlas.");
+                        showAlert("Error de configuración: Las categorías maestras no existen.");
                         return false;
                     }
                 } catch (error) {
-                    if (error.code === 'permission-denied') showAlert("Error de Permisos: No se pueden leer las categorías. Asegúrate de haber aplicado las reglas de seguridad correctas en tu base de datos de Firebase.");
-                    else showAlert("Ocurrió un error inesperado al cargar la configuración.");
+                    showAlert("Ocurrió un error inesperado al cargar la configuración.");
                     return false;
                 }
             }
@@ -592,16 +617,17 @@
             function loadTransactions() {
                 if (transactionsUnsubscribe) transactionsUnsubscribe();
                 const transactionsRef = collection(db, "users", currentUser.uid, "transactions");
-                // Usamos orderBy por 'date' en lugar de 'createdAt' para asegurar orden cronológico
-                const q = query(transactionsRef); 
+                const q = query(transactionsRef);
                 transactionsUnsubscribe = onSnapshot(q, (snapshot) => {
                     allTransactions = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
                     
-                    // Ordenamos en memoria de más reciente a más antigua
+                    // Ordenamos de manera cronológica en memoria (más reciente a más antigua)
                     allTransactions.sort((a, b) => new Date(b.date) - new Date(a.date));
                     
                     renderTransactionsTable();
                     updateDashboards();
+                    updateEvolutionSelectors();
+                    renderEvolutionChart();
                     
                     populateReportCategories();
                     populateReportSubcategories(reportCategorySelect.value);
@@ -609,10 +635,37 @@
                 });
             }
 
-            // --- LÓGICA DE RENDERIZADO Y UI ---
+            // Funciones de edición globalizadas
+            window.enableEdit = (span) => {
+                span.classList.add('hidden');
+                span.nextElementSibling.classList.remove('hidden');
+            };
+
+            window.cancelEdit = (btn) => {
+                const editControls = btn.parentElement;
+                editControls.classList.add('hidden');
+                editControls.previousElementSibling.classList.remove('hidden');
+            };
+
+            window.saveDetail = async (id, btn) => {
+                const newDetail = btn.previousElementSibling.value;
+                try {
+                    await updateDoc(doc(db, "users", currentUser.uid, "transactions", id), { detail: newDetail });
+                } catch (error) {
+                    showAlert("No se pudo actualizar el detalle.");
+                }
+            };
+
+            window.deleteTx = (id) => {
+                showConfirmation("¿Estás seguro de que quieres eliminar esta transacción?", async () => {
+                    await deleteDoc(doc(db, "users", currentUser.uid, "transactions", id));
+                });
+            };
+
+            // --- RENDERIZADO TABLAS ---
             
             function renderTransactionsTable() {
-                 if (allTransactions.length === 0) {
+                if (allTransactions.length === 0) {
                     transactionsTableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4">No hay transacciones registradas.</td></tr>`;
                     return;
                 }
@@ -623,13 +676,22 @@
                     const formattedAmount = isNaN(amount) ? '0.00' : amount.toFixed(2);
                     return `
                         <tr class="bg-white border-b hover:bg-gray-50">
-                            <td class="px-6 py-4">${t.date}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">${t.date}</td>
                             <td class="px-6 py-4">${t.category}</td>
                             <td class="px-6 py-4">${t.subcategory}</td>
-                            <td class="px-6 py-4 text-sm text-gray-500">${t.detail || ''}</td>
-                            <td class="px-6 py-4 font-medium ${amountClass}">${sign}S/ ${formattedAmount}</td>
                             <td class="px-6 py-4">
-                                <button class="delete-btn px-2 py-1 text-xs font-medium text-red-600 bg-red-100 rounded-md hover:bg-red-200 transition-colors" data-id="${t.id}">
+                                <div class="flex items-center gap-2">
+                                    <span class="detail-display cursor-pointer hover:bg-yellow-100 p-1 rounded transition-colors" onclick="window.enableEdit(this)">${t.detail || 'Sin detalle'}</span>
+                                    <div class="edit-controls hidden flex gap-1">
+                                        <input class="border border-indigo-300 rounded px-2 py-1 text-sm text-gray-800" value="${t.detail || ''}">
+                                        <button onclick="window.saveDetail('${t.id}', this)" class="text-green-600 hover:text-green-800 p-1"><i data-lucide="check" class="w-4 h-4"></i></button>
+                                        <button onclick="window.cancelEdit(this)" class="text-gray-400 hover:text-gray-600 p-1"><i data-lucide="x" class="w-4 h-4"></i></button>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 font-bold ${amountClass} whitespace-nowrap">${sign}S/ ${formattedAmount}</td>
+                            <td class="px-6 py-4">
+                                <button onclick="window.deleteTx('${t.id}')" class="px-2 py-1 text-xs font-medium text-red-600 bg-red-100 rounded-md hover:bg-red-200 transition-colors">
                                     Eliminar
                                 </button>
                             </td>
@@ -637,14 +699,7 @@
                     `;
                 }).join('');
                 transactionsTableBody.innerHTML = tableRowsHtml;
-                document.querySelectorAll('.delete-btn').forEach(button => {
-                    button.addEventListener('click', (e) => {
-                        const id = e.currentTarget.dataset.id;
-                        showConfirmation("¿Estás seguro de que quieres eliminar esta transacción?", async () => {
-                            await deleteDoc(doc(db, "users", currentUser.uid, "transactions", id));
-                        });
-                    });
-                });
+                if (typeof lucide !== 'undefined') lucide.createIcons();
             }
 
             function updateDashboards() {
@@ -654,7 +709,7 @@
 
             function updateMonthlyDashboard() {
                 const selectedMonth = monthSelector.value;
-                const monthlyTransactions = allTransactions.filter(t => t.date.startsWith(selectedMonth));
+                const monthlyTransactions = allTransactions.filter(t => t.date && t.date.startsWith(selectedMonth));
                 const income = monthlyTransactions.filter(t => t.type === 'Ingreso').reduce((sum, t) => sum + parseFloat(t.amount), 0);
                 const expense = monthlyTransactions.filter(t => t.type !== 'Ingreso').reduce((sum, t) => sum + parseFloat(t.amount), 0);
                 const savings = income - expense;
@@ -663,15 +718,17 @@
                 document.getElementById('monthly-expense').textContent = `S/ ${expense.toFixed(2)}`;
                 document.getElementById('monthly-savings').textContent = `S/ ${savings.toFixed(2)}`;
                 document.getElementById('monthly-savings-rate').textContent = `${savingsRate}%`;
+                
                 generateMonthlyExpensesChart(monthlyTransactions);
                 generateMonthlyIncomeChart(monthlyTransactions);
                 generateMonthlyCompositionChart(monthlyTransactions);
                 generateMonthlyPaymentChart(monthlyTransactions);
                 generateBreakdownCharts(monthlyTransactions);
             }
+
             function updateAnnualDashboard() {
                 const year = yearSelector.value;
-                const annualTransactions = allTransactions.filter(t => t.date.startsWith(year));
+                const annualTransactions = allTransactions.filter(t => t.date && t.date.startsWith(year));
                 const income = annualTransactions.filter(t => t.type === 'Ingreso').reduce((sum, t) => sum + parseFloat(t.amount), 0);
                 const expense = annualTransactions.filter(t => t.type !== 'Ingreso').reduce((sum, t) => sum + parseFloat(t.amount), 0);
                 const savings = income - expense;
@@ -680,19 +737,28 @@
                 document.getElementById('annual-expense').textContent = `S/ ${expense.toFixed(2)}`;
                 document.getElementById('annual-savings').textContent = `S/ ${savings.toFixed(2)}`;
                 document.getElementById('annual-savings-rate').textContent = `${savingsRate}%`;
+                
                 generateAnnualFlowChart(annualTransactions);
                 generateAnnualCompositionChart(annualTransactions);
             }
-            function populateYearSelector() {
+
+            function populateYearSelectors() {
                 const currentYear = new Date().getFullYear();
-                yearSelector.innerHTML = '';
-                for (let i = currentYear; i >= currentYear - 5; i--) {
-                    const option = document.createElement('option');
-                    option.value = i;
-                    option.textContent = i;
-                    yearSelector.appendChild(option);
-                }
+                const selectors = [yearSelector, document.getElementById('evo-year')];
+                selectors.forEach(select => {
+                    if (select) {
+                        select.innerHTML = '';
+                        for (let i = currentYear; i >= currentYear - 5; i--) {
+                            const option = document.createElement('option');
+                            option.value = i;
+                            option.textContent = i;
+                            select.appendChild(option);
+                        }
+                    }
+                });
             }
+
+            // --- GRÁFICOS CON COLORES MÁS NEGROS Y VISIBLES (REQUERIDO POR EL USUARIO) ---
 
             function renderChart(canvasId, type, data, options) {
                 if (chartInstances[canvasId]) chartInstances[canvasId].destroy();
@@ -701,13 +767,11 @@
             }
             
             function generateMonthlyExpensesChart(transactions) {
-                // Agrupar gastos por subcategoría y sumar montos
                 const grouped = transactions.filter(t => t.type !== 'Ingreso').reduce((acc, t) => {
                     acc[t.subcategory] = (acc[t.subcategory] || 0) + parseFloat(t.amount);
                     return acc;
                 }, {});
 
-                // Ordenar por monto de mayor a menor
                 const sortedEntries = Object.entries(grouped).sort((a, b) => b[1] - a[1]);
                 const sortedLabels = sortedEntries.map(e => e[0]);
                 const sortedData = sortedEntries.map(e => e[1]);
@@ -726,13 +790,15 @@
                         datalabels: {
                             anchor: 'end',
                             align: 'end',
-                            color: '#555',
+                            color: '#000000', // Modificado a negro puro
+                            font: {
+                                weight: 'bold', // Negrita añadida para máxima legibilidad
+                                size: 11
+                            },
                             formatter: function(value) { return 'S/ ' + value.toFixed(2); }
                         }
                     },
-                    layout: {
-                        padding: { right: 50 } // Espacio para la etiqueta
-                    }
+                    layout: { padding: { right: 50 } }
                 });
             }
 
@@ -746,14 +812,19 @@
                     plugins: {
                         datalabels: {
                             anchor: 'end',
-                            align: 'top', // Para barras verticales
-                            color: '#555',
+                            align: 'top',
+                            color: '#000000', // Modificado a negro puro
+                            font: {
+                                weight: 'bold', // Negrita añadida
+                                size: 11
+                            },
                             formatter: function(value) { return 'S/ ' + value.toFixed(2); }
                         }
                     },
                     layout: { padding: { top: 30 } }
                 });
             }
+
             function generateMonthlyCompositionChart(transactions) {
                 const grouped = transactions.filter(t => t.type !== 'Ingreso').reduce((acc, t) => { acc[t.category] = (acc[t.category] || 0) + parseFloat(t.amount); return acc; }, {});
                 renderChart('monthly-composition-chart', 'doughnut', { 
@@ -763,13 +834,14 @@
                     responsive: true,
                     plugins: {
                         datalabels: {
-                            color: '#fff',
-                            font: { weight: 'bold' },
+                            color: '#ffffff', // Blanco se mantiene sobre fondos de color, pero en negrita
+                            font: { weight: 'bold', size: 12 },
                             formatter: function(value) { return 'S/ ' + value.toFixed(0); }
                         }
                     }
                 });
             }
+
             function generateMonthlyPaymentChart(transactions) {
                 const grouped = transactions.filter(t => t.type !== 'Ingreso').reduce((acc, t) => { acc[t.paymentMethod] = (acc[t.paymentMethod] || 0) + parseFloat(t.amount); return acc; }, {});
                 renderChart('monthly-payment-chart', 'pie', { 
@@ -779,8 +851,8 @@
                     responsive: true,
                     plugins: {
                         datalabels: {
-                            color: '#fff',
-                            font: { weight: 'bold' },
+                            color: '#ffffff', // Blanco en negrita para pasteles
+                            font: { weight: 'bold', size: 12 },
                             formatter: function(value) { return 'S/ ' + value.toFixed(0); }
                         }
                     }
@@ -789,8 +861,6 @@
             
             function generateBreakdownCharts(transactions) {
                 const container = document.getElementById('expense-breakdown-container');
-                
-                // Limpiar gráficos anteriores
                 dynamicChartInstances.forEach(chart => chart.destroy());
                 dynamicChartInstances = [];
                 container.innerHTML = '';
@@ -798,13 +868,11 @@
                 const expenses = transactions.filter(t => t.type !== 'Ingreso');
                 const groups = {};
                 
-                // Agrupar por Categoría -> Subcategoría
                 expenses.forEach(t => {
                    if (!groups[t.category]) groups[t.category] = {};
                    groups[t.category][t.subcategory] = (groups[t.category][t.subcategory] || 0) + parseFloat(t.amount); 
                 });
 
-                // Generar un gráfico por cada Categoría encontrada
                 Object.keys(groups).sort().forEach((cat, i) => {
                     const card = document.createElement('div');
                     card.className = 'dashboard-card';
@@ -815,18 +883,15 @@
                     card.appendChild(h3);
                     
                     const canvasContainer = document.createElement('div');
-                    // canvasContainer.style.height = '250px'; // Altura opcional
                     const canvas = document.createElement('canvas');
                     canvasContainer.appendChild(canvas);
                     card.appendChild(canvasContainer);
-                    
                     container.appendChild(card);
 
                     const ctx = canvas.getContext('2d');
-                    const sortedSubcats = Object.keys(groups[cat]).sort((a, b) => groups[cat][b] - groups[cat][a]); // Ordenar por monto descendente
+                    const sortedSubcats = Object.keys(groups[cat]).sort((a, b) => groups[cat][b] - groups[cat][a]);
                     const data = sortedSubcats.map(sub => groups[cat][sub]);
                     
-                    // Paleta de colores rotativa
                     const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
                     const color = colors[i % colors.length];
 
@@ -843,33 +908,21 @@
                             }]
                         },
                         options: {
-                            indexAxis: 'y', // Gráfico horizontal para leer mejor las etiquetas
+                            indexAxis: 'y',
                             responsive: true,
                             maintainAspectRatio: true,
-                            layout: { padding: { right: 50 } }, // Espacio para la etiqueta
+                            layout: { padding: { right: 50 } },
                             plugins: {
                                 legend: { display: false },
                                 datalabels: {
                                     anchor: 'end',
                                     align: 'end',
-                                    color: '#555',
+                                    color: '#000000', // Modificado a negro puro
+                                    font: {
+                                        weight: 'bold', // Negrita añadida
+                                        size: 11
+                                    },
                                     formatter: function(value) { return 'S/ ' + value.toFixed(2); }
-                                },
-                                tooltip: {
-                                    callbacks: {
-                                        label: function(context) {
-                                            return new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN' }).format(context.raw);
-                                        }
-                                    }
-                                }
-                            },
-                            scales: {
-                                x: {
-                                    ticks: {
-                                        callback: function(value) {
-                                            return 'S/ ' + value;
-                                        }
-                                    }
                                 }
                             }
                         }
@@ -890,11 +943,10 @@
                 }, { 
                     responsive: true, 
                     scales: { x: { stacked: false }, y: { stacked: false } },
-                    plugins: {
-                        datalabels: { display: false } // No mostrar etiquetas en el anual por saturación
-                    }
+                    plugins: { datalabels: { display: false } }
                 });
             }
+
             function generateAnnualCompositionChart(transactions) {
                 const grouped = transactions.filter(t => t.type !== 'Ingreso').reduce((acc, t) => { acc[t.category] = (acc[t.category] || 0) + parseFloat(t.amount); return acc; }, {});
                 renderChart('annual-composition-chart', 'doughnut', { 
@@ -904,18 +956,109 @@
                     responsive: true,
                     plugins: {
                         datalabels: {
-                            color: '#fff',
-                            font: { weight: 'bold' },
+                            color: '#ffffff', // Blanco en negrita para pasteles
+                            font: { weight: 'bold', size: 12 },
                             formatter: function(value) { return 'S/ ' + value.toFixed(0); }
                         }
                     }
                 });
             }
 
+            // --- LÓGICA DE EVOLUCIÓN ---
+            function updateEvolutionSelectors() {
+                const subcatSelect = document.getElementById('evo-subcat');
+                const previousSelection = subcatSelect.value;
+                const subcats = [...new Set(allTransactions.map(t => t.subcategory).filter(Boolean))].sort();
+
+                if (subcats.length === 0) {
+                    subcatSelect.innerHTML = '<option value="">Sin datos disponibles</option>';
+                    return;
+                }
+
+                subcatSelect.innerHTML = '<option value="">-- Selecciona una Subcategoría --</option>' + 
+                                         subcats.map(s => `<option value="${s}">${s}</option>`).join('');
+
+                if (subcats.includes(previousSelection)) {
+                    subcatSelect.value = previousSelection;
+                }
+            }
+
+            function renderEvolutionChart() {
+                const year = document.getElementById('evo-year').value;
+                const subcat = document.getElementById('evo-subcat').value;
+                const canvas = document.getElementById('evo-chart');
+                if (!canvas) return;
+                const ctx = canvas.getContext('2d');
+
+                if (!subcat) {
+                    if (evoChartInstance) evoChartInstance.destroy();
+                    return;
+                }
+
+                const monthlyTotals = new Array(12).fill(0);
+                allTransactions.filter(t => t.date && t.date.startsWith(year) && t.subcategory === subcat)
+                               .forEach(t => {
+                                   const monthIndex = parseInt(t.date.split('-')[1], 10) - 1;
+                                   if (monthIndex >= 0 && monthIndex < 12) {
+                                       monthlyTotals[monthIndex] += parseFloat(t.amount || 0);
+                                   }
+                               });
+
+                if (evoChartInstance) evoChartInstance.destroy();
+
+                evoChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'],
+                        datasets: [{
+                            label: `Evolución Mensual: ${subcat} (S/)`,
+                            data: monthlyTotals,
+                            backgroundColor: '#4f46e5',
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) { return 'S/ ' + value; }
+                                }
+                            }
+                        },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) { return 'Total: S/ ' + context.raw.toFixed(2); }
+                                }
+                            },
+                            datalabels: {
+                                anchor: 'end',
+                                align: 'top',
+                                color: '#000000', // Modificado a negro puro en el dashboard evolutivo también
+                                font: {
+                                    weight: 'bold', // Negrita añadida
+                                    size: 11
+                                },
+                                formatter: function(value) { 
+                                    return value > 0 ? 'S/ ' + value.toFixed(2) : ''; 
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            document.getElementById('evo-year').addEventListener('change', renderEvolutionChart);
+            document.getElementById('evo-subcat').addEventListener('change', renderEvolutionChart);
+
+            // --- LÓGICA DE REPORTES ---
+
             function populateReportCategories() {
                 const currentSelection = reportCategorySelect.value;
-                // Obtener categorías únicas de las transacciones
-                const uniqueCategories = [...new Set(allTransactions.map(t => t.category))].sort((a, b) => a.localeCompare(b));
+                const uniqueCategories = [...new Set(allTransactions.map(t => t.category))].sort();
                 
                 reportCategorySelect.innerHTML = '<option value="">Seleccione una categoría...</option>';
                 uniqueCategories.forEach(cat => {
@@ -944,9 +1087,8 @@
                 reportSubcategorySelect.disabled = false;
                 reportSubcategorySelect.innerHTML = '<option value="">Seleccione una subcategoría...</option>';
                 
-                // Filtrar transacciones por categoría y extraer subcategorías únicas
                 const filteredTransactions = allTransactions.filter(t => t.category === categoryFilter);
-                const uniqueSubcategories = [...new Set(filteredTransactions.map(t => t.subcategory))].sort((a, b) => a.localeCompare(b));
+                const uniqueSubcategories = [...new Set(filteredTransactions.map(t => t.subcategory))].sort();
                 
                 uniqueSubcategories.forEach(sub => {
                     if(sub) { 
@@ -960,7 +1102,7 @@
                 if (uniqueSubcategories.includes(currentSelection)) {
                     reportSubcategorySelect.value = currentSelection;
                 } else {
-                    reportSubcategorySelect.value = ''; // Reset si la anterior no pertenece a esta categoría
+                    reportSubcategorySelect.value = '';
                 }
             }
 
@@ -976,7 +1118,6 @@
                     return;
                 }
 
-                // Filtrar transacciones y ORDENAR POR FECHA (descendente: más reciente primero)
                 const filtered = allTransactions
                     .filter(t => t.category === category && t.subcategory === subcategory)
                     .sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -993,14 +1134,13 @@
 
                 filtered.forEach(t => {
                     const year = t.date.substring(0, 4);
-                    const month = t.date.substring(0, 7); // Formato YYYY-MM
+                    const month = t.date.substring(0, 7);
                     const amount = parseFloat(t.amount);
 
                     annualTotals[year] = (annualTotals[year] || 0) + amount;
                     monthlyTotals[month] = (monthlyTotals[month] || 0) + amount;
                 });
 
-                // Renderizar Anual (Descendente)
                 annualContainer.innerHTML = Object.keys(annualTotals).sort().reverse().map(year => `
                     <div class="flex justify-between items-center p-3 bg-gray-50 rounded border border-gray-200">
                         <span class="font-bold text-gray-700">${year}</span>
@@ -1008,7 +1148,6 @@
                     </div>
                 `).join('');
 
-                // Renderizar Mensual (Descendente)
                 monthlyContainer.innerHTML = Object.keys(monthlyTotals).sort().reverse().map(month => `
                     <div class="flex justify-between items-center p-3 bg-gray-50 rounded border border-gray-200">
                         <span class="font-bold text-gray-700">${month}</span>
@@ -1016,7 +1155,6 @@
                     </div>
                 `).join('');
 
-                // Renderizar Detalles (Tabla)
                 tableBody.innerHTML = filtered.map(t => {
                     const isIncome = t.type === 'Ingreso';
                     const amountClass = isIncome ? 'text-green-600' : 'text-red-600';
@@ -1033,6 +1171,8 @@
                 }).join('');
             }
 
+            // --- TABS NAVEGACIÓN ---
+
             function setupTabs() {
                 const tabButtons = document.querySelectorAll('.tab-button');
                 const tabContents = document.querySelectorAll('.tab-content');
@@ -1046,7 +1186,8 @@
                         const tabName = button.dataset.tab;
                         tabContents.forEach(content => content.classList.toggle('hidden', content.id !== `${tabName}-content`));
                         if (['monthly', 'annual'].includes(tabName)) updateDashboards();
-                        if (button.dataset.tab === 'admin' && currentUserRole === 'admin') {
+                        if (tabName === 'evolution') renderEvolutionChart();
+                        if (tabName === 'admin' && currentUserRole === 'admin') {
                             renderAdminPanel();
                         }
                     });
@@ -1061,31 +1202,19 @@
                         showAlert("No hay transacciones para exportar.");
                         return;
                     }
-
-                    // Definir cabeceras
                     const headers = ["Fecha", "Tipo", "Categoría", "Subcategoría", "Detalle", "Monto", "Método de Pago"];
-                    
-                    // Añadir BOM para que Excel abra correctamente caracteres especiales (tildes, ñ)
                     const bom = "\uFEFF";
-                    
-                    // Mapear datos
                     const rows = allTransactions.map(t => [
                         t.date,
                         t.type,
                         t.category,
                         t.subcategory,
-                        `"${(t.detail || '').replace(/"/g, '""')}"`, // Escapar comillas y envolver en comillas
+                        `"${(t.detail || '').replace(/"/g, '""')}"`,
                         t.amount,
                         t.paymentMethod
                     ]);
 
-                    // Combinar todo
-                    const csvContent = bom + [
-                        headers.join(','), 
-                        ...rows.map(row => row.join(','))
-                    ].join('\n');
-
-                    // Crear blob y link
+                    const csvContent = bom + [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
                     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
                     const url = URL.createObjectURL(blob);
                     const link = document.createElement("a");
@@ -1137,14 +1266,14 @@
                     subcategorySelect.innerHTML = '<option value="">Seleccione...</option>';
                     const selectedType = typeSelect.value, selectedCat = categorySelect.value;
                     if (selectedType && selectedCat && masterCategories[selectedType][selectedCat]) {
-                        const sortedSubcats = [...masterCategories[selectedType][selectedCat]].sort((a, b) => a.localeCompare(b));
+                        const sortedSubcats = [...masterCategories[selectedType][selectedCat]].sort();
                         sortedSubcats.forEach(sub => subcategorySelect.innerHTML += `<option value="${sub}">${sub}</option>`);
                     }
                 });
 
                 form.addEventListener('submit', async (e) => {
                     e.preventDefault();
-                    if (isSubmitting) return; // Evitar doble envío
+                    if (isSubmitting) return;
                     
                     isSubmitting = true;
                     saveBtn.disabled = true;
@@ -1166,13 +1295,8 @@
                     try {
                         const transactionsRef = collection(db, "users", currentUser.uid, "transactions");
                         await addDoc(transactionsRef, newTransaction);
-                        
-                        // Mensaje de éxito
                         showAlert("¡Transacción registrada exitosamente!");
-                        
-                        // Resetear formulario para el próximo ingreso
                         initTransactionForm();
-                        
                     } catch (error) { 
                         showAlert("No se pudo guardar la transacción.");
                     } finally {
@@ -1202,10 +1326,11 @@
                         await updatePassword(auth.currentUser, newPassword);
                         passwordModal.style.display = 'none';
                         showAlert("¡Contraseña actualizada con éxito!");
-                    } catch (error) { console.error("Error al cambiar contraseña:", error); passwordError.textContent = "Ocurrió un error. Es posible que necesites volver a iniciar sesión para realizar esta acción."; passwordError.classList.remove('hidden'); }
+                    } catch (error) { passwordError.textContent = "Ocurrió un error. Vuelve a iniciar sesión e intenta de nuevo."; passwordError.classList.remove('hidden'); }
                 });
             }
             
+            // --- GESTIÓN ADM ---
             function setupAdminListeners() {
                 document.getElementById('save-master-categories-btn').addEventListener('click', async () => {
                     if (currentUserRole !== 'admin') return;
@@ -1231,7 +1356,7 @@
                     typeDiv.className = 'p-4 border rounded-lg bg-slate-50';
                     let typeHtml = `<h3 class="text-xl font-bold text-primary mb-3">${type}</h3>`;
                     Object.keys(masterCategories[type]).forEach(category => {
-                        const sortedSubcats = [...masterCategories[type][category]].sort((a, b) => a.localeCompare(b));
+                        const sortedSubcats = [...masterCategories[type][category]].sort();
                         typeHtml += `<div class="ml-4 mb-4"><h4 class="font-semibold text-text-primary">${category}</h4><ul class="list-disc ml-5 mt-2 text-sm text-text-secondary space-y-1">
                             ${sortedSubcats.map(sub => `<li class="flex items-center justify-between"><span>${sub}</span><button data-type="${type}" data-category="${category}" data-sub="${sub}" class="admin-delete-subcategory-btn text-red-500 hover:text-red-700 font-bold text-lg leading-none">&times;</button></li>`).join('')}
                         </ul></div>`;
@@ -1279,13 +1404,11 @@
                         });
                     });
                 } catch (error) {
-                    let errorMessage = "Error al cargar usuarios.";
-                    if (error.code === 'permission-denied') errorMessage += " Verifique que las reglas de seguridad de Firestore estén actualizadas correctamente.";
-                    container.innerHTML = `<div class="text-center p-4 text-red-500">${errorMessage}</div>`;
+                    container.innerHTML = `<div class="text-center p-4 text-red-500">Error al cargar usuarios.</div>`;
                 }
             }
 
-            // --- LÓGICA DE INTELIGENCIA ARTIFICIAL (GEMINI) ---
+            // --- INTELIGENCIA ARTIFICIAL (GEMINI) ---
             async function generateAiAnalysis() {
                 if (!allTransactions || allTransactions.length === 0) {
                     showAlert("No hay suficientes transacciones para analizar.");
@@ -1322,15 +1445,8 @@
                     
                     aiResultContent.innerHTML = formatMarkdown(responseText);
                     aiResultContainer.classList.remove('hidden');
-                    
-                    if (typeof lucide !== 'undefined') lucide.createIcons();
                 } catch (error) {
-                    console.error(error);
-                    if (error.message && error.message.includes('429')) {
-                        showAlert("Has alcanzado el límite de solicitudes gratuitas de la Inteligencia Artificial. Por favor, espera un par de minutos e inténtalo de nuevo.");
-                    } else {
-                        showAlert("Hubo un error al generar el análisis. Verifica tu conexión o intenta más tarde.");
-                    }
+                    showAlert("Hubo un error al generar el análisis.");
                 } finally {
                     analyzeAiBtn.disabled = false;
                     aiLoading.classList.add('hidden');
@@ -1341,7 +1457,6 @@
             function filterTransactionsByPeriod(transactions, period) {
                 const now = new Date();
                 let startDate = new Date();
-                
                 if (period === 'current-month') {
                     startDate = new Date(now.getFullYear(), now.getMonth(), 1);
                 } else if (period === 'last-3-months') {
@@ -1349,12 +1464,9 @@
                 } else if (period === 'last-year') {
                     startDate.setFullYear(now.getFullYear() - 1);
                 }
-
-                // Ajustar a medianoche
                 startDate.setHours(0, 0, 0, 0);
-
                 return transactions.filter(t => {
-                    const txDate = new Date(t.date + 'T00:00:00'); // Tratar como local
+                    const txDate = new Date(t.date + 'T00:00:00');
                     return txDate >= startDate;
                 });
             }
@@ -1378,25 +1490,14 @@
                 });
 
                 const savingsRate = income > 0 ? (((income - expense) / income) * 100).toFixed(1) : ((expense === 0) ? 0 : -100);
-                
-                const topCategories = Object.entries(categoryCounts)
-                    .sort((a, b) => b[1] - a[1])
-                    .slice(0, 3)
-                    .map(e => `${e[0]} (S/ ${e[1].toFixed(2)})`);
-
-                const mostUsedPayment = Object.entries(paymentCounts)
-                    .sort((a, b) => b[1] - a[1])[0]?.[0] || 'N/A';
+                const topCategories = Object.entries(categoryCounts).sort((a, b) => b[1] - a[1]).slice(0, 3).map(e => `${e[0]} (S/ ${e[1].toFixed(2)})`);
+                const mostUsedPayment = Object.entries(paymentCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'N/A';
 
                 return { income, expense, savingsRate, topCategories, mostUsedPayment, txCount: transactions.length };
             }
 
             function buildAiPrompt(metrics, period) {
-                const periodText = {
-                    'current-month': 'este mes',
-                    'last-3-months': 'los últimos 3 meses',
-                    'last-year': 'el último año'
-                }[period];
-
+                const periodText = { 'current-month': 'este mes', 'last-3-months': 'los últimos 3 meses', 'last-year': 'el último año' }[period];
                 return `Analiza mis finanzas de ${periodText}. Aquí están mis métricas consolidadas:
 - Ingresos totales: S/ ${metrics.income.toFixed(2)}
 - Gastos totales: S/ ${metrics.expense.toFixed(2)}
@@ -1405,82 +1506,52 @@
 - Método de pago más utilizado: ${metrics.mostUsedPayment}
 - Total de transacciones evaluadas: ${metrics.txCount}
 
-Actúa como mi asesor financiero experto. Basado estricta y únicamente en estos datos proporcionados, redacta un reporte directo en español que contenga:
-1. Un resumen ejecutivo breve de mi salud financiera actual.
-2. Identifica áreas de preocupación (por ejemplo, si mi tasa de ahorro es baja/negativa, o si los gastos en una categoría son desproporcionados).
-3. Dame 3 recomendaciones prácticas, concretas y personalizadas para mejorar.
-Usa un tono amigable pero profesional. Emplea formato Markdown con negritas, títulos y viñetas para estructurarlo visualmente.`;
+Por favor, redacta un análisis profesional con recomendaciones.`;
             }
 
             async function callGeminiAPI(prompt) {
                 const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${GEMINI_API_KEY}`;
                 const payload = {
                     contents: [{ parts: [{ text: prompt }] }],
-                    systemInstruction: { parts: [{ text: "Eres un experto asesor financiero personal. Ayudas a las personas a optimizar su presupuesto con consejos claros, directos y motivadores." }] }
+                    systemInstruction: { parts: [{ text: "Eres un experto asesor financiero personal. Ayudas a las personas a optimizar su presupuesto." }] }
                 };
-
-                const attemptFetch = async (retries = 5, delay = 1000) => {
-                    try {
-                        const response = await fetch(url, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(payload)
-                        });
-                        
-                        if (!response.ok) throw new Error(`HTTP_ERROR_${response.status}`);
-                        const data = await response.json();
-                        return data.candidates[0].content.parts[0].text;
-                    } catch (error) {
-                        if (retries > 0) {
-                            await new Promise(res => setTimeout(res, delay));
-                            return attemptFetch(retries - 1, delay * 2);
-                        }
-                        throw error;
-                    }
-                };
-
-                return attemptFetch();
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json();
+                return data.candidates[0].content.parts[0].text;
             }
 
             function formatMarkdown(text) {
-                let html = text
+                return text
                     .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-primary">$1</strong>')
-                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
                     .replace(/^### (.*$)/gim, '<h3 class="text-xl font-bold mt-5 mb-2 text-primary">$1</h3>')
                     .replace(/^## (.*$)/gim, '<h2 class="text-2xl font-bold mt-6 mb-3 text-primary border-b pb-2">$1</h2>')
-                    .replace(/^# (.*$)/gim, '<h1 class="text-3xl font-bold mt-6 mb-4 text-primary">$1</h1>')
-                    .replace(/^\d+\.\s(.*$)/gim, '<li class="ml-6 list-decimal marker:text-primary mb-2">$1</li>')
-                    .replace(/^\*\s(.*$)/gim, '<li class="ml-6 list-disc marker:text-primary mb-2">$1</li>')
-                    .replace(/^-\s(.*$)/gim, '<li class="ml-6 list-disc marker:text-primary mb-2">$1</li>')
                     .replace(/\n\n/g, '</p><p class="mb-4 text-gray-700 leading-relaxed">')
-                    .replace(/\n(?!\<li\>|\<h)/g, '<br>');
-                
-                html = html.replace(/(<li class="ml-6 list-disc.*?>.*?<\/li>)(?!<li class="ml-6 list-disc)/gims, "$1</ul>");
-                html = html.replace(/(?<!<\/li>)<li class="ml-6 list-disc/gims, "<ul class='mb-4 space-y-2'><li class=\"ml-6 list-disc");
-                
-                html = html.replace(/(<li class="ml-6 list-decimal.*?>.*?<\/li>)(?!<li class="ml-6 list-decimal)/gims, "$1</ol>");
-                html = html.replace(/(?<!<\/li>)<li class="ml-6 list-decimal/gims, "<ol class='mb-4 space-y-2'><li class=\"ml-6 list-decimal");
-                
-                return `<p class="mb-4 text-gray-700 leading-relaxed">${html}</p>`;
+                    .replace(/\n/g, '<br>');
             }
 
-            // --- Utilidades ---
+            // --- UTILIDADES ---
             function resetInactivityTimer() {
                 clearTimeout(inactivityTimer);
                 inactivityTimer = setTimeout(() => showAlert("Se ha cerrado la sesión por inactividad.", () => signOut(auth)), 10 * 60 * 1000); 
             }
+            
             function updateClock() {
                 const now = new Date();
                 const options = { timeZone: 'America/Lima', weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric' };
                 const formatter = new Intl.DateTimeFormat('es-PE', options);
-                const capitalizedDate = formatter.format(now).replace(/^\w/, c => c.toUpperCase());
-                document.getElementById('current-datetime').textContent = capitalizedDate;
+                document.getElementById('current-datetime').textContent = formatter.format(now).replace(/^\w/, c => c.toUpperCase());
             }
-             function showAlert(message, onOk) {
+            
+            function showAlert(message, onOk) {
                 const modal = document.getElementById('alert-modal'), msg = document.getElementById('alert-message'), okBtn = document.getElementById('alert-ok-btn');
                 msg.textContent = message; modal.style.display = 'flex';
                 okBtn.onclick = () => { modal.style.display = 'none'; if (onOk) onOk(); };
             }
+            
             function showConfirmation(message, onConfirm) {
                 const modal = document.getElementById('confirm-modal'), msg = document.getElementById('confirm-message'), okBtn = document.getElementById('confirm-ok-btn'), cancelBtn = document.getElementById('confirm-cancel-btn');
                 msg.textContent = message; modal.style.display = 'flex';
