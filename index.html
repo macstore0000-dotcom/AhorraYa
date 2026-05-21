@@ -89,6 +89,15 @@
                     Ingresar
                 </button>
             </form>
+
+            <!-- Control de versiones en la pantalla de Login (Opción 1 implementada) -->
+            <div class="pt-4 border-t border-gray-100 flex items-center justify-between text-xs text-text-secondary">
+                <span>Estado del Sistema</span>
+                <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full font-bold flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 bg-green-500 rounded-full inline-block animate-pulse"></span>
+                    V21.05.2026.0 - Estable
+                </span>
+            </div>
         </div>
     </div>
 
@@ -679,62 +688,6 @@
                 if (typeof lucide !== 'undefined') lucide.createIcons();
             }
 
-            function updateDashboards() {
-                updateMonthlyDashboard();
-                updateAnnualDashboard();
-            }
-
-            function updateMonthlyDashboard() {
-                const selectedMonth = monthSelector.value;
-                const monthlyTransactions = allTransactions.filter(t => t.date && t.date.startsWith(selectedMonth));
-                const income = monthlyTransactions.filter(t => t.type === 'Ingreso').reduce((sum, t) => sum + parseFloat(t.amount), 0);
-                const expense = monthlyTransactions.filter(t => t.type !== 'Ingreso').reduce((sum, t) => sum + parseFloat(t.amount), 0);
-                const savings = income - expense;
-                const savingsRate = income > 0 ? ((savings / income) * 100).toFixed(1) : 0;
-                document.getElementById('monthly-income').textContent = `S/ ${income.toFixed(2)}`;
-                document.getElementById('monthly-expense').textContent = `S/ ${expense.toFixed(2)}`;
-                document.getElementById('monthly-savings').textContent = `S/ ${savings.toFixed(2)}`;
-                document.getElementById('monthly-savings-rate').textContent = `${savingsRate}%`;
-                
-                generateMonthlyExpensesChart(monthlyTransactions);
-                generateMonthlyIncomeChart(monthlyTransactions);
-                generateMonthlyCompositionChart(monthlyTransactions);
-                generateMonthlyPaymentChart(monthlyTransactions);
-                generateBreakdownCharts(monthlyTransactions);
-            }
-
-            function updateAnnualDashboard() {
-                const year = yearSelector.value;
-                const annualTransactions = allTransactions.filter(t => t.date && t.date.startsWith(year));
-                const income = annualTransactions.filter(t => t.type === 'Ingreso').reduce((sum, t) => sum + parseFloat(t.amount), 0);
-                const expense = annualTransactions.filter(t => t.type !== 'Ingreso').reduce((sum, t) => sum + parseFloat(t.amount), 0);
-                const savings = income - expense;
-                const savingsRate = income > 0 ? ((savings / income) * 100).toFixed(1) : 0;
-                document.getElementById('annual-income').textContent = `S/ ${income.toFixed(2)}`;
-                document.getElementById('annual-expense').textContent = `S/ ${expense.toFixed(2)}`;
-                document.getElementById('annual-savings').textContent = `S/ ${savings.toFixed(2)}`;
-                document.getElementById('annual-savings-rate').textContent = `${savingsRate}%`;
-                
-                generateAnnualFlowChart(annualTransactions);
-                generateAnnualCompositionChart(annualTransactions);
-            }
-
-            function populateYearSelectors() {
-                const currentYear = new Date().getFullYear();
-                const selectors = [yearSelector, document.getElementById('evo-year')];
-                selectors.forEach(select => {
-                    if (select) {
-                        select.innerHTML = '';
-                        for (let i = currentYear; i >= currentYear - 5; i--) {
-                            const option = document.createElement('option');
-                            option.value = i;
-                            option.textContent = i;
-                            select.appendChild(option);
-                        }
-                    }
-                });
-            }
-
             // --- GRÁFICOS MANTIENEN SU FORMATO ORIGINAL ---
 
             function renderChart(canvasId, type, data, options) {
@@ -811,6 +764,7 @@
                 });
             }
 
+            // --- GRÁFICOS MANTIENEN SU FORMATO ORIGINAL ---
             function generateMonthlyPaymentChart(transactions) {
                 const grouped = transactions.filter(t => t.type !== 'Ingreso').reduce((acc, t) => { acc[t.paymentMethod] = (acc[t.paymentMethod] || 0) + parseFloat(t.amount); return acc; }, {});
                 renderChart('monthly-payment-chart', 'pie', { 
@@ -912,6 +866,7 @@
                 });
             }
 
+            // --- GRÁFICOS MANTIENEN SU FORMATO ORIGINAL ---
             function generateAnnualCompositionChart(transactions) {
                 const grouped = transactions.filter(t => t.type !== 'Ingreso').reduce((acc, t) => { acc[t.category] = (acc[t.category] || 0) + parseFloat(t.amount); return acc; }, {});
                 renderChart('annual-composition-chart', 'doughnut', { 
@@ -1342,7 +1297,7 @@
                     input.value = '';
                 }));
                 container.querySelectorAll('.admin-delete-subcategory-btn').forEach(btn => btn.addEventListener('click', (e) => {
-                    const { type, category, sub } = e.target.dataset, index = masterCategories[type][category].indexOf(sub);
+                    const { type, category, sub = '' } = e.target.dataset, index = masterCategories[type][category].indexOf(sub);
                     if (index > -1) { masterCategories[type][category].splice(index, 1); renderMasterCategoriesPanel(); }
                 }));
             }
